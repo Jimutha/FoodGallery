@@ -18,8 +18,7 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setIsLoading(true);
 
     try {
@@ -36,15 +35,18 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-2xl transform transition-all duration-300 hover:shadow-3xl">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
+          <h2 className="mt-6 text-center text-4xl font-extrabold text-gray-900 tracking-tight">
+            Welcome
           </h2>
+          <p className="mt-2 text-center text-sm text-gray-500">
+            Sign in to continue your journey
+          </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
+        <div className="mt-8 space-y-6">
+          <div className="space-y-5">
             <div>
               <label htmlFor="email" className="sr-only">
                 Email address
@@ -55,7 +57,7 @@ const Login = () => {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-all duration-200"
                 placeholder="Email address"
                 value={formData.email}
                 onChange={handleChange}
@@ -71,7 +73,7 @@ const Login = () => {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-all duration-200"
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
@@ -85,11 +87,11 @@ const Login = () => {
                 id="remember-me"
                 name="remember-me"
                 type="checkbox"
-                className="h-4 w-4 text-primary-500 focus:ring-primary-500 border-gray-300 rounded"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
               />
               <label
                 htmlFor="remember-me"
-                className="ml-2 block text-sm text-gray-900"
+                className="ml-2 block text-sm text-gray-700 font-medium"
               >
                 Remember me
               </label>
@@ -98,32 +100,59 @@ const Login = () => {
             <div className="text-sm">
               <Link
                 to="/forgot-password"
-                className="font-medium text-primary-500 hover:text-primary-600"
+                className="font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200"
               >
-                Forgot your password?
+                Forgot password?
               </Link>
             </div>
           </div>
 
           <div>
             <button
-              type="submit"
+              type="button"
               disabled={isLoading}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              onClick={handleSubmit}
+              className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              {isLoading ? "Signing in..." : "Sign in"}
+              {isLoading ? (
+                <span className="flex items-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z"
+                    ></path>
+                  </svg>
+                  Signing in...
+                </span>
+              ) : (
+                "Sign in"
+              )}
             </button>
           </div>
-        </form>
+        </div>
 
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Don't have an account?{" "}
             <Link
               to="/register"
-              className="font-medium text-primary-500 hover:text-primary-600"
+              className="font-semibold text-blue-600 hover:text-blue-800 transition-colors duration-200"
             >
-              Sign up
+              Create one now
             </Link>
           </p>
         </div>
