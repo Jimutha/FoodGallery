@@ -1,6 +1,5 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import Footer from "./components/Footer"; // Import the new Footer component
 import Home from "./pages/Home";
 import FoodPosts from "./pages/FoodPosts";
 import FoodRecipes from "./pages/FoodRecipes";
@@ -14,9 +13,9 @@ import PostDetails from "./pages/PostDetails";
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <main className="flex-grow pb-16">
+      <main className="pb-16">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/posts" element={<FoodPosts />} />
@@ -30,7 +29,6 @@ function App() {
           <Route path="/dashboard" element={<ProtectedRoute />} />
         </Routes>
       </main>
-      <Footer /> {/* Add the Footer component here */}
     </div>
   );
 }
