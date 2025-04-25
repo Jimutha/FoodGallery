@@ -10,6 +10,7 @@ import Register from "./pages/Register";
 import SinglePost from "./pages/SinglePost";
 import ProtectedRoute from "./components/ProtectedRoute";
 import FoodPostCard from "./components/FoodPostCard";
+import Addtip from "./pages/Addtip";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/posts" element={<FoodPosts />} />
           <Route path="/recipes" element={<FoodRecipes />} />
           <Route path="/decorations" element={<Decorations />} />
+          <Route path="/addtip" element={<Addtip />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/post/:id" element={<SinglePost />} />
