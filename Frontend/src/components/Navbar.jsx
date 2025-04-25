@@ -71,7 +71,7 @@ const Navbar = () => {
             {/* Navigation Links */}
             <div className="hidden md:ml-4 md:flex md:space-x-8">
               <Link
-                to="/posts"
+                to="/post-details"
                 className="text-gray-500 hover:text-primary-500 px-3 py-2 text-sm font-medium"
               >
                 Food Posts
