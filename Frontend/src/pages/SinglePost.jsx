@@ -1,26 +1,40 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { getPostById, deletePost } from "../services/api";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { getPostById } from "../services/api";
 
 const SinglePost = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
         const response = await getPostById(id);
-        setPost(response.data);
-      } catch (error) {
-        console.error("Error fetching post:", error);
+        setPost(response);
+      } catch (err) {
+        setError("Failed to load post. Please try again.");
       } finally {
         setIsLoading(false);
       }
     };
     fetchPost();
   }, [id]);
+
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      try {
+        await deletePost(id);
+        alert("Post deleted successfully!");
+        navigate("/post-details");
+      } catch (err) {
+        setError("Failed to delete post. Please try again.");
+      }
+    }
+  };
 
   if (isLoading) {
     return (
@@ -30,43 +44,47 @@ const SinglePost = () => {
     );
   }
 
+  if (error) {
+    return <div className="text-center text-red-500 py-12">{error}</div>;
+  }
+
   if (!post) {
     return (
-      <div className="text-center py-12">
-        <h1 className="text-2xl font-bold">Post not found</h1>
-      </div>
+      <div className="text-center text-gray-500 py-12">Post not found.</div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <article className="bg-white rounded-xl shadow-md overflow-hidden">
-        <div className="h-96 overflow-hidden">
-          <img
-            className="w-full h-full object-cover"
-            src={
-              post.imageUrl ||
-              "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=880&q=80"
-            }
-            alt={post.title}
-          />
+    <div className="container mx-auto px-4 py-12">
+      <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-6">
+        <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
+        <p className="text-gray-600 mb-6">{post.description}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          {post.mediaUrls.map((url, index) => (
+            <img
+              key={index}
+              src={url}
+              alt={`Media ${index + 1}`}
+              className="w-full h-48 object-cover rounded-md"
+              onError={(e) => (e.target.src = "/placeholder-image.jpg")}
+            />
+          ))}
         </div>
-        <div className="p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            {post.title}
-          </h1>
-          <div className="flex items-center text-gray-500 mb-6">
-            <span className="text-sm">
-              Posted on {new Date(post.createdAt).toLocaleDateString()}
-            </span>
-          </div>
-          <div className="prose max-w-none">
-            <p className="text-gray-700 whitespace-pre-line">
-              {post.description}
-            </p>
-          </div>
+        <div className="flex justify-between">
+          <button
+            onClick={() => navigate("/post-details")}
+            className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+          >
+            Back to Posts
+          </button>
+          <button
+            onClick={handleDelete}
+            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+          >
+            Delete Post
+          </button>
         </div>
-      </article>
+      </div>
     </div>
   );
 };

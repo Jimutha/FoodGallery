@@ -80,7 +80,7 @@ const Navbar = () => {
                 to="/recipes"
                 className="text-gray-500 hover:text-primary-500 px-3 py-2 text-sm font-medium"
               >
-                Recipes
+                Food Recipes
               </Link>
               <Link
                 to="/decorations"

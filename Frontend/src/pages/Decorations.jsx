@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import FoodPostCard from "../components/FoodPostCard";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { getPostsByCategory } from "../services/api";
@@ -7,7 +6,6 @@ import { getPostsByCategory } from "../services/api";
 const Decorations = () => {
   const [decorations, setDecorations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDecorations = async () => {
@@ -23,21 +21,9 @@ const Decorations = () => {
     fetchDecorations();
   }, []);
 
-  const handleAddTip = () => {
-    navigate("/addtip");
-  };
-
   return (
     <div className="container mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-center mb-4">Food Decorations</h1>
-      <div className="flex justify-end mb-8">
-        <button
-          onClick={handleAddTip}
-          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Add New Decoration
-        </button>
-      </div>
+      <h1 className="text-3xl font-bold text-center mb-12">Food Decorations</h1>
       {isLoading ? (
         <div className="flex justify-center">
           <LoadingSpinner />
