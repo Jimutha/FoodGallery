@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { registerUser } from "../services/api";
-import { toast } from "react-toastify";
+import React from "react";
 
 const Register = () => {
+
+  return <div></div>;
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -175,6 +175,7 @@ const Register = () => {
       </div>
     </div>
   );
+
 };
 
 export default Register;
