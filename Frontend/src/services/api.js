@@ -1,103 +1,98 @@
-import axios from "axios";
+// Mock API functions for fetching posts
+const mockPosts = [
+  {
+    id: 4,
+    title: "Beautiful Cake Decoration",
+    description: "A stunning cake decorated with fresh flowers.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=880&q=80",
+    category: "DECORATION",
+    createdAt: "2025-04-01T10:00:00Z",
+  },
+];
 
-const API = axios.create({
-  baseURL: "http://localhost:8080/api",
-});
+// Mock user database (for login and registration)
+const mockUsers = [
+  {
+    id: 1,
+    email: "test@example.com",
+    password: "password123", // In a real app, passwords would be hashed
+    username: "TestUser",
+  },
+];
 
-// Request interceptor
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// Simulate API delay
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Response interceptor
-API.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "/login";
-    }
-    return Promise.reject(error);
-  }
-);
-
-// Auth endpoints
-export const registerUser = (userData) => API.post("/auth/register", userData);
-export const loginUser = (credentials) => API.post("/auth/login", credentials);
-
-// Post endpoints
-export const getPostsByCategory = (category) => API.get(`/posts/${category}`);
-export const getPostById = (id) => API.get(`/posts/${id}`);
-export const createPost = (postData) => API.post("/posts", postData);
-export const updatePost = (id, postData) => API.put(`/posts/${id}`, postData);
-export const deletePost = (id) => API.delete(`/posts/${id}`);
-
-// Recipe endpoints
-export const createRecipe = (recipeData) => {
-  const formData = new FormData();
-
-  // Append basic fields
-  formData.append("title", recipeData.title);
-  formData.append("category", "RECIPE");
-
-  // Append steps
-  recipeData.steps.forEach((step, index) => {
-    formData.append(`steps[${index}]`, step);
-  });
-
-  // Append media files
-  recipeData.media.forEach((file) => {
-    formData.append("media", file);
-  });
-
-  return API.post("/recipes", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+// Fetch posts by category
+export const getPostsByCategory = async (category) => {
+  await delay(1000); // Simulate network delay
+  const filteredPosts = mockPosts.filter((post) => post.category === category);
+  return { data: filteredPosts };
 };
 
-export const getRecipes = () => API.get("/recipes?category=RECIPE");
-export const getRecipeById = (id) => API.get(`/recipes/${id}`);
-export const updateRecipe = (id, recipeData) => {
-  const formData = new FormData();
+// Fetch a single post by ID
+export const getPostById = async (id) => {
+  await delay(1000); // Simulate network delay
+  const post = mockPosts.find((post) => post.id === parseInt(id));
+  if (!post) {
+    throw new Error("Post not found");
+  }
+  return { data: post };
+};
 
-  formData.append("title", recipeData.title);
+// Create a new post
+export const createPost = async (post) => {
+  await delay(500); // Simulate network delay
+  mockPosts.push(post);
+  return { success: true, data: post };
+};
 
-  recipeData.steps.forEach((step, index) => {
-    formData.append(`steps[${index}]`, step);
-  });
+// Mock user registration
+export const registerUser = async (userData) => {
+  await delay(500); // Simulate network delay
+  const { email, password, username } = userData;
 
-  if (recipeData.media) {
-    recipeData.media.forEach((file) => {
-      if (file instanceof File) {
-        formData.append("media", file);
-      }
-    });
+  // Check if user already exists
+  const existingUser = mockUsers.find((user) => user.email === email);
+  if (existingUser) {
+    throw new Error("User with this email already exists");
   }
 
-  return API.put(`/recipes/${id}`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-};
-export const deleteRecipe = (id) => API.delete(`/recipes/${id}`);
+  // Create new user
+  const newUser = {
+    id: mockUsers.length + 1,
+    email,
+    password, // In a real app, hash the password
+    username,
+  };
+  mockUsers.push(newUser);
 
-// Media endpoints
-export const uploadMedia = (file) => {
-  const formData = new FormData();
-  formData.append("file", file);
-  return API.post("/media/upload", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  // Return mock token and user data
+  return {
+    success: true,
+    token: `mock-token-${newUser.id}`, // Mock JWT token
+    user: { id: newUser.id, email: newUser.email, username: newUser.username },
+  };
 };
 
-export const deleteMedia = (mediaId) => API.delete(`/media/${mediaId}`);
+// Mock user login
+export const loginUser = async (credentials) => {
+  await delay(500); // Simulate network delay
+  const { email, password } = credentials;
+
+  // Find user
+  const user = mockUsers.find(
+    (u) => u.email === email && u.password === password
+  );
+  if (!user) {
+    throw new Error("Invalid email or password");
+  }
+
+  // Return mock token and user data
+  return {
+    success: true,
+    token: `mock-token-${user.id}`, // Mock JWT token
+    user: { id: user.id, email: user.email, username: user.username },
+  };
+};
