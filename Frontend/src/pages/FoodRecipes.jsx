@@ -109,7 +109,7 @@ const FoodRecipes = () => {
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title="Create Food Recipe"
+        title="New Food Recipe"
       >
         <CreateRecipeForm
           onClose={() => setShowModal(false)}
