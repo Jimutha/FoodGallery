@@ -1,31 +1,38 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import FoodPostCard from "../components/FoodPostCard";
+import RecipePostCard from "../components/RecipePostCard"; // Use the new component
 import LoadingSpinner from "../components/LoadingSpinner";
+import Modal from "../components/Modal";
+import CreateRecipeForm from "../components/CreateRecipeForm";
 import { getPostsByCategory } from "../services/api";
 
 const FoodRecipes = () => {
   const [recipes, setRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const fetchRecipes = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getPostsByCategory("RECIPE");
+      setRecipes(response.data || []);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching recipes:", err);
+      setError("Failed to load recipes. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchRecipes = async () => {
-      try {
-        setIsLoading(true);
-        const response = await getPostsByCategory("RECIPE");
-        setRecipes(response.data || []); // Ensure recipes is always an array
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching recipes:", err);
-        setError("Failed to load recipes. Please try again later.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchRecipes();
   }, []);
+
+  const handleRecipeCreated = (newRecipe) => {
+    setRecipes([...recipes, newRecipe]); // Add new recipe to the list
+    setShowModal(false); // Close the modal
+  };
 
   return (
     <div
@@ -35,14 +42,13 @@ const FoodRecipes = () => {
       {/* Header Section with Title and Conditional Button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-4">
         <h1 className="text-3xl font-bold">Food Recipes</h1>
-        {/* Show "Create New Recipe" button only if there are recipes */}
         {recipes.length > 0 && !isLoading && !error && (
-          <Link
-            to="/recipes/create"
+          <button
+            onClick={() => setShowModal(true)}
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors whitespace-nowrap"
           >
             + Create New Recipe
-          </Link>
+          </button>
         )}
       </div>
 
@@ -60,20 +66,32 @@ const FoodRecipes = () => {
           <h3 className="text-xl font-medium text-gray-600 mb-4">
             No recipes found
           </h3>
-          <Link
-            to="/recipes/create"
+          <button
+            onClick={() => setShowModal(true)}
             className="inline-block px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
           >
             Create your first recipe
-          </Link>
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {recipes.map((recipe) => (
-            <FoodPostCard key={recipe.id} post={recipe} />
+            <RecipePostCard key={recipe.id} post={recipe} />
           ))}
         </div>
       )}
+
+      {/* Modal with CreateRecipeForm */}
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="Create Food Recipe"
+      >
+        <CreateRecipeForm
+          onClose={() => setShowModal(false)}
+          onSubmitSuccess={handleRecipeCreated}
+        />
+      </Modal>
     </div>
   );
 };

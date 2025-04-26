@@ -4,7 +4,8 @@ import { createPost } from "../services/api";
 const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
   const [title, setTitle] = useState("");
   const [steps, setSteps] = useState([""]); // Start with one step
-  const [images, setImages] = useState([]); // Array for image files
+  const [previewImage, setPreviewImage] = useState(null); // Single preview image
+  const [detailedImages, setDetailedImages] = useState([]); // Additional detailed images
   const [video, setVideo] = useState(null); // Single video file
   const [videoDurationError, setVideoDurationError] = useState(null); // Video duration error
   const videoRef = useRef(null);
@@ -23,15 +24,23 @@ const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
     setSteps(newSteps);
   };
 
-  // Handle image upload
-  const handleImageUpload = (e) => {
+  // Handle preview image upload
+  const handlePreviewImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPreviewImage(file);
+    }
+  };
+
+  // Handle detailed images upload
+  const handleDetailedImagesUpload = (e) => {
     const files = Array.from(e.target.files);
-    const totalImages = images.length + files.length;
-    if (totalImages > 3) {
-      alert("You can only upload up to 3 images.");
+    const totalImages = detailedImages.length + files.length;
+    if (totalImages > 2) {
+      alert("You can only upload up to 2 detailed images.");
       return;
     }
-    setImages([...images, ...files]);
+    setDetailedImages([...detailedImages, ...files]);
   };
 
   // Handle video upload and validate duration
@@ -61,8 +70,8 @@ const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
       alert("Please fill in all fields (title and steps).");
       return;
     }
-    if (images.length === 0 && !video) {
-      alert("Please upload at least one image or video.");
+    if (!previewImage) {
+      alert("Please upload a preview image.");
       return;
     }
     if (videoDurationError) {
@@ -71,8 +80,11 @@ const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
     }
 
     // Mock media URLs (since we can't upload files to a real server)
-    const imageUrls = images.map(
-      (_, index) => `https://example.com/image${index + 1}.jpg`
+    const previewImageUrl = previewImage
+      ? "https://example.com/preview-image.jpg"
+      : null;
+    const detailedImageUrls = detailedImages.map(
+      (_, index) => `https://example.com/detailed-image${index + 1}.jpg`
     );
     const videoUrl = video ? "https://example.com/video.mp4" : null;
 
@@ -81,11 +93,11 @@ const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
       title,
       description: steps.join("; "), // Combine steps into description for display
       imageUrl:
-        imageUrls[0] ||
-        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=880&q=80", // Use first image or fallback
+        previewImageUrl ||
+        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=880&q=80", // Use preview image
       category: "RECIPE",
       createdAt: new Date().toISOString(),
-      additionalImages: imageUrls.slice(1), // Store additional images
+      additionalImages: detailedImageUrls, // Store detailed images
       videoUrl, // Store video URL
       steps, // Store steps as an array
     };
@@ -148,23 +160,46 @@ const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
       {/* Upload Media */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Upload Media (1-3 images, video max 30 seconds)
+          Upload Media
         </label>
-        {/* Images */}
-        <div className="mb-2">
+        {/* Preview Image */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-600 mb-1">
+            Preview Image (Required)
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handlePreviewImageUpload}
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
+          {previewImage && (
+            <p className="text-sm text-gray-600 mt-1">
+              Preview image selected: {previewImage.name}
+            </p>
+          )}
+        </div>
+        {/* Detailed Images */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-600 mb-1">
+            Detailed Pictures (Optional, up to 2)
+          </label>
           <input
             type="file"
             accept="image/*"
             multiple
-            onChange={handleImageUpload}
+            onChange={handleDetailedImagesUpload}
             className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
           <p className="text-sm text-gray-600 mt-1">
-            {images.length} image(s) selected (max 3)
+            {detailedImages.length} detailed image(s) selected (max 2)
           </p>
         </div>
         {/* Video */}
         <div>
+          <label className="block text-sm font-medium text-gray-600 mb-1">
+            Video (Optional, max 30 seconds)
+          </label>
           <input
             type="file"
             accept="video/*"
