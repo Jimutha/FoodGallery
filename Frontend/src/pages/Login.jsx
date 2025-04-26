@@ -8,17 +8,62 @@ const Login = () => {
     email: "",
     password: "",
   });
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+  });
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = { email: "", password: "" };
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+      isValid = false;
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+      isValid = false;
+    }
+
+    // Password validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+      isValid = false;
+    } else if (!passwordRegex.test(formData.password)) {
+      newErrors.password =
+        "Password must be at least 8 characters long, include uppercase, lowercase, number, and special character";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
+    });
+
+    // Clear error when user starts typing
+    setErrors({
+      ...errors,
+      [name]: "",
     });
   };
 
   const handleSubmit = async () => {
+    if (!validateForm()) {
+      toast.error("Please fix the errors in the form");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -57,11 +102,14 @@ const Login = () => {
                 type="email"
                 autoComplete="email"
                 required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-all duration-200"
+                className={`w-full px-4 py-3 bg-gray-50 border ${errors.email ? "border-red-500" : "border-gray-200"} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-all duration-200`}
                 placeholder="Email address"
                 value={formData.email}
                 onChange={handleChange}
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-500 animate-slide-in">{errors.email}</p>
+              )}
             </div>
             <div>
               <label htmlFor="password" className="sr-only">
@@ -73,11 +121,14 @@ const Login = () => {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-all duration-200"
+                className={`w-full px-4 py-3 bg-gray-50 border ${errors.password ? "border-red-500" : "border-gray-200"} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-all duration-200`}
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
               />
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-500 animate-slide-in">{errors.password}</p>
+              )}
             </div>
           </div>
 
@@ -157,6 +208,23 @@ const Login = () => {
           </p>
         </div>
       </div>
+      <style>
+        {`
+          @keyframes slideIn {
+            from {
+              opacity: 0;
+              transform: translateY(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+          }
+        `}
+      </style>
     </div>
   );
 };
