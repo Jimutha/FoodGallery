@@ -1,8 +1,9 @@
 import { useState } from "react";
 import Modal from "./Modal";
 import CreateRecipeForm from "./CreateRecipeForm";
+import { deletePost } from "../services/api";
 
-const RecipePostCard = ({ post, onModify }) => {
+const RecipePostCard = ({ post, onModify, onDelete }) => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -17,6 +18,22 @@ const RecipePostCard = ({ post, onModify }) => {
     closeEditModal();
   };
 
+  const handleDelete = async () => {
+    // Show confirmation prompt
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete "${post.title}"?`
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await deletePost(post.id); // Call API to delete the post
+      onDelete(post.id); // Notify parent to update state
+    } catch (err) {
+      console.error("Error deleting recipe:", err);
+      alert("Failed to delete recipe. Please try again.");
+    }
+  };
+
   return (
     <>
       <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
@@ -26,7 +43,7 @@ const RecipePostCard = ({ post, onModify }) => {
           alt={post.title}
           className="w-full h-48 object-cover"
         />
-        {/* Title, View Details, and Modify Buttons */}
+        {/* Title, View Details, Modify, and Delete Buttons */}
         <div className="p-4 flex justify-between items-center">
           <h3 className="text-lg font-semibold text-gray-800">{post.title}</h3>
           <div className="space-x-3">
@@ -41,6 +58,12 @@ const RecipePostCard = ({ post, onModify }) => {
               className="inline-block text-green-500 hover:text-green-700 font-medium"
             >
               Modify
+            </button>
+            <button
+              onClick={handleDelete}
+              className="inline-block text-red-500 hover:text-red-700 font-medium"
+            >
+              Delete
             </button>
           </div>
         </div>

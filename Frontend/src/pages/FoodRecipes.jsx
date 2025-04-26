@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import RecipePostCard from "../components/RecipePostCard"; // Use the new component
+import RecipePostCard from "../components/RecipePostCard";
 import LoadingSpinner from "../components/LoadingSpinner";
 import Modal from "../components/Modal";
 import CreateRecipeForm from "../components/CreateRecipeForm";
@@ -29,9 +29,31 @@ const FoodRecipes = () => {
     fetchRecipes();
   }, []);
 
-  const handleRecipeCreated = (newRecipe) => {
-    setRecipes([...recipes, newRecipe]); // Add new recipe to the list
-    setShowModal(false); // Close the modal
+  const handleRecipeCreated = (newRecipe, isEditing) => {
+    if (isEditing) {
+      // Update existing recipe in state
+      setRecipes(
+        recipes.map((recipe) =>
+          recipe.id === newRecipe.id ? newRecipe : recipe
+        )
+      );
+    } else {
+      // Add new recipe to state
+      setRecipes([...recipes, newRecipe]);
+    }
+    setShowModal(false);
+  };
+
+  const handleModifyRecipe = (updatedRecipe) => {
+    setRecipes(
+      recipes.map((recipe) =>
+        recipe.id === updatedRecipe.id ? updatedRecipe : recipe
+      )
+    );
+  };
+
+  const handleDeleteRecipe = (recipeId) => {
+    setRecipes(recipes.filter((recipe) => recipe.id !== recipeId));
   };
 
   return (
@@ -39,7 +61,6 @@ const FoodRecipes = () => {
       className="container mx-auto px-4 py-12"
       style={{ backgroundColor: "#f0f0f0", minHeight: "100vh" }}
     >
-      {/* Header Section with Title and Conditional Button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-4">
         <h1 className="text-3xl font-bold">Food Recipes</h1>
         {recipes.length > 0 && !isLoading && !error && (
@@ -52,7 +73,6 @@ const FoodRecipes = () => {
         )}
       </div>
 
-      {/* Content Section */}
       {isLoading ? (
         <div className="flex justify-center">
           <LoadingSpinner />
@@ -76,12 +96,16 @@ const FoodRecipes = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {recipes.map((recipe) => (
-            <RecipePostCard key={recipe.id} post={recipe} />
+            <RecipePostCard
+              key={recipe.id}
+              post={recipe}
+              onModify={handleModifyRecipe}
+              onDelete={handleDeleteRecipe}
+            />
           ))}
         </div>
       )}
 
-      {/* Modal with CreateRecipeForm */}
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
@@ -90,6 +114,8 @@ const FoodRecipes = () => {
         <CreateRecipeForm
           onClose={() => setShowModal(false)}
           onSubmitSuccess={handleRecipeCreated}
+          recipeToEdit={null}
+          isEditing={false}
         />
       </Modal>
     </div>

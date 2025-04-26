@@ -59,6 +59,17 @@ export const updatePost = async (id, updatedPost) => {
   return { success: true, data: mockPosts[index] };
 };
 
+// Delete a post
+export const deletePost = async (id) => {
+  await delay(500);
+  const index = mockPosts.findIndex((post) => post.id === id);
+  if (index === -1) {
+    throw new Error("Post not found");
+  }
+  mockPosts.splice(index, 1);
+  return { success: true };
+};
+
 // Mock user registration
 export const registerUser = async (userData) => {
   await delay(500);
