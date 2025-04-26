@@ -25,7 +25,6 @@ function App() {
             <Route path="/recipes" element={<FoodRecipes />} />
             <Route path="/decorations" element={<Decorations />} />
             <Route path="/posts/:id" element={<SinglePost />} />
-            {/* Removed /recipes/create route since we're using a modal */}
           </Routes>
         </main>
         <Footer />
