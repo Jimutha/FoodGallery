@@ -7,6 +7,7 @@ import PostDetails from "./pages/PostDetails";
 import FoodRecipes from "./pages/FoodRecipes";
 import Decorations from "./pages/Decorations";
 import SinglePost from "./pages/SinglePost";
+import UpdatePost from "./pages/UpdatePost";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/posts" element={<CreateFoodPost />} />
+          <Route path="/update-posts/:id" element={<UpdatePost />} />
           <Route path="/post-details" element={<PostDetails />} />
           <Route path="/recipes" element={<FoodRecipes />} />
           <Route path="/decorations" element={<Decorations />} />
