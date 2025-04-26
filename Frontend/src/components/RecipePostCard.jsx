@@ -6,6 +6,7 @@ import { deletePost } from "../services/api";
 const RecipePostCard = ({ post, onModify, onDelete }) => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const openDetailsModal = () => setShowDetailsModal(true);
   const closeDetailsModal = () => setShowDetailsModal(false);
@@ -13,21 +14,19 @@ const RecipePostCard = ({ post, onModify, onDelete }) => {
   const openEditModal = () => setShowEditModal(true);
   const closeEditModal = () => setShowEditModal(false);
 
+  const openDeleteModal = () => setShowDeleteModal(true);
+  const closeDeleteModal = () => setShowDeleteModal(false);
+
   const handleEditSubmit = (updatedRecipe) => {
-    onModify(updatedRecipe); // Notify parent to update the recipe
+    onModify(updatedRecipe);
     closeEditModal();
   };
 
-  const handleDelete = async () => {
-    // Show confirmation prompt
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete "${post.title}"?`
-    );
-    if (!confirmDelete) return;
-
+  const handleDeleteConfirm = async () => {
     try {
-      await deletePost(post.id); // Call API to delete the post
-      onDelete(post.id); // Notify parent to update state
+      await deletePost(post.id);
+      onDelete(post.id);
+      closeDeleteModal();
     } catch (err) {
       console.error("Error deleting recipe:", err);
       alert("Failed to delete recipe. Please try again.");
@@ -43,26 +42,80 @@ const RecipePostCard = ({ post, onModify, onDelete }) => {
           alt={post.title}
           className="w-full h-48 object-cover"
         />
-        {/* Title, View Details, Modify, and Delete Buttons */}
+        {/* Title and Action Buttons */}
         <div className="p-4 flex justify-between items-center">
           <h3 className="text-lg font-semibold text-gray-800">{post.title}</h3>
-          <div className="space-x-3">
+          <div className="flex space-x-2">
+            {/* View Details Button */}
             <button
               onClick={openDetailsModal}
-              className="inline-block text-blue-500 hover:text-blue-700 font-medium"
+              className="flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors duration-200"
+              aria-label="View recipe details"
             >
-              View Details
+              <svg
+                className="w-4 h-4 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+              View
             </button>
+            {/* Modify Button */}
             <button
               onClick={openEditModal}
-              className="inline-block text-green-500 hover:text-green-700 font-medium"
+              className="flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors duration-200"
+              aria-label="Modify recipe"
             >
+              <svg
+                className="w-4 h-4 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"
+                />
+              </svg>
               Modify
             </button>
+            {/* Delete Button */}
             <button
-              onClick={handleDelete}
-              className="inline-block text-red-500 hover:text-red-700 font-medium"
+              onClick={openDeleteModal}
+              className="flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors duration-200"
+              aria-label="Delete recipe"
             >
+              <svg
+                className="w-4 h-4 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0H6a1 1 0 00-1 1v1h14V4a1 1 0 00-1-1h-4m-5 4v12m0-12h8"
+                />
+              </svg>
               Delete
             </button>
           </div>
@@ -183,6 +236,37 @@ const RecipePostCard = ({ post, onModify, onDelete }) => {
           recipeToEdit={post}
           isEditing={true}
         />
+      </Modal>
+
+      {/* Modal for Delete Confirmation */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={closeDeleteModal}
+        title="Confirm Deletion"
+      >
+        <div className="space-y-6">
+          <p className="text-gray-700">
+            Are you sure you want to delete "
+            <span className="font-semibold">{post.title}</span>"? This action
+            cannot be undone.
+          </p>
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={closeDeleteModal}
+              className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+              aria-label="Cancel deletion"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDeleteConfirm}
+              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+              aria-label="Confirm deletion"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
       </Modal>
     </>
   );
