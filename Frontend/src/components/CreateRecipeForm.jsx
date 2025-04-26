@@ -1,30 +1,45 @@
-import { useState, useRef } from "react";
-import { createPost } from "../services/api";
+import { useState, useRef, useEffect } from "react";
+import { createPost, updatePost } from "../services/api";
 
-const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
+const CreateRecipeForm = ({
+  onClose,
+  onSubmitSuccess,
+  recipeToEdit,
+  isEditing,
+}) => {
   const [title, setTitle] = useState("");
-  const [steps, setSteps] = useState([""]); // Start with one step
-  const [previewImage, setPreviewImage] = useState(null); // Single preview image
-  const [detailedImages, setDetailedImages] = useState([]); // Additional detailed images
-  const [video, setVideo] = useState(null); // Single video file
-  const [videoDurationError, setVideoDurationError] = useState(null); // Video duration error
+  const [steps, setSteps] = useState([""]);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [detailedImages, setDetailedImages] = useState([]);
+  const [video, setVideo] = useState(null);
+  const [videoDurationError, setVideoDurationError] = useState(null);
   const videoRef = useRef(null);
 
-  // Handle adding a new step
+  // Pre-fill form if editing
+  useEffect(() => {
+    if (isEditing && recipeToEdit) {
+      setTitle(recipeToEdit.title || "");
+      setSteps(recipeToEdit.steps || [""]);
+      // Since we can't pre-fill file inputs, we'll leave them as null
+      // Optionally, you can display the current image URLs as placeholders or labels
+      setPreviewImage(null); // Reset file input
+      setDetailedImages([]); // Reset file input
+      setVideo(null); // Reset file input
+    }
+  }, [isEditing, recipeToEdit]);
+
   const addStep = () => {
     if (steps.length < 30) {
       setSteps([...steps, ""]);
     }
   };
 
-  // Handle step input change
   const handleStepChange = (index, value) => {
     const newSteps = [...steps];
     newSteps[index] = value;
     setSteps(newSteps);
   };
 
-  // Handle preview image upload
   const handlePreviewImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -32,7 +47,6 @@ const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
     }
   };
 
-  // Handle detailed images upload
   const handleDetailedImagesUpload = (e) => {
     const files = Array.from(e.target.files);
     const totalImages = detailedImages.length + files.length;
@@ -43,7 +57,6 @@ const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
     setDetailedImages([...detailedImages, ...files]);
   };
 
-  // Handle video upload and validate duration
   const handleVideoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -63,14 +76,13 @@ const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title || steps.some((step) => !step.trim())) {
       alert("Please fill in all fields (title and steps).");
       return;
     }
-    if (!previewImage) {
+    if (!isEditing && !previewImage) {
       alert("Please upload a preview image.");
       return;
     }
@@ -82,39 +94,59 @@ const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
     // Mock media URLs (since we can't upload files to a real server)
     const previewImageUrl = previewImage
       ? "https://example.com/preview-image.jpg"
-      : null;
-    const detailedImageUrls = detailedImages.map(
-      (_, index) => `https://example.com/detailed-image${index + 1}.jpg`
-    );
-    const videoUrl = video ? "https://example.com/video.mp4" : null;
+      : isEditing
+        ? recipeToEdit.imageUrl
+        : null;
+    const detailedImageUrls =
+      detailedImages.length > 0
+        ? detailedImages.map(
+            (_, index) => `https://example.com/detailed-image${index + 1}.jpg`
+          )
+        : isEditing
+          ? recipeToEdit.additionalImages
+          : [];
+    const videoUrl = video
+      ? "https://example.com/video.mp4"
+      : isEditing
+        ? recipeToEdit.videoUrl
+        : null;
 
-    const newRecipe = {
-      id: Date.now(), // Simple unique ID
+    const recipeData = {
       title,
-      description: steps.join("; "), // Combine steps into description for display
+      description: steps.join("; "),
       imageUrl:
         previewImageUrl ||
-        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=880&q=80", // Use preview image
+        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=880&q=80",
       category: "RECIPE",
-      createdAt: new Date().toISOString(),
-      additionalImages: detailedImageUrls, // Store detailed images
-      videoUrl, // Store video URL
-      steps, // Store steps as an array
+      createdAt: isEditing ? recipeToEdit.createdAt : new Date().toISOString(),
+      additionalImages: detailedImageUrls,
+      videoUrl,
+      steps,
     };
 
     try {
-      await createPost(newRecipe);
-      onSubmitSuccess(newRecipe); // Notify parent to refresh recipes
-      onClose(); // Close the modal
+      if (isEditing) {
+        // Update existing recipe
+        const updatedRecipe = { ...recipeData, id: recipeToEdit.id };
+        await updatePost(recipeToEdit.id, updatedRecipe);
+        onSubmitSuccess(updatedRecipe, true); // Pass isEditing flag
+      } else {
+        // Create new recipe
+        const newRecipe = { ...recipeData, id: Date.now() };
+        await createPost(newRecipe);
+        onSubmitSuccess(newRecipe, false);
+      }
+      onClose();
     } catch (err) {
-      console.error("Error creating recipe:", err);
-      alert("Failed to create recipe. Please try again.");
+      console.error("Error saving recipe:", err);
+      alert(
+        `Failed to ${isEditing ? "update" : "create"} recipe. Please try again.`
+      );
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Title */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Title
@@ -129,7 +161,6 @@ const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
         />
       </div>
 
-      {/* Steps to Follow */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Steps to Follow
@@ -157,16 +188,30 @@ const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
         )}
       </div>
 
-      {/* Upload Media */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Upload Media
         </label>
-        {/* Preview Image */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-600 mb-1">
-            Preview Image (Required)
+            Preview Image{" "}
+            {isEditing
+              ? "(Optional - Leave blank to keep current)"
+              : "(Required)"}
           </label>
+          {isEditing && recipeToEdit.imageUrl && (
+            <p className="text-sm text-gray-600 mb-1">
+              Current Preview Image:{" "}
+              <a
+                href={recipeToEdit.imageUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:underline"
+              >
+                View
+              </a>
+            </p>
+          )}
           <input
             type="file"
             accept="image/*"
@@ -175,15 +220,34 @@ const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
           />
           {previewImage && (
             <p className="text-sm text-gray-600 mt-1">
-              Preview image selected: {previewImage.name}
+              New preview image selected: {previewImage.name}
             </p>
           )}
         </div>
-        {/* Detailed Images */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-600 mb-1">
             Detailed Pictures (Optional, up to 2)
           </label>
+          {isEditing &&
+            recipeToEdit.additionalImages &&
+            recipeToEdit.additionalImages.length > 0 && (
+              <div className="text-sm text-gray-600 mb-1">
+                Current Detailed Images:
+                {recipeToEdit.additionalImages.map((url, index) => (
+                  <span key={index}>
+                    {" "}
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      Image {index + 1}
+                    </a>
+                  </span>
+                ))}
+              </div>
+            )}
           <input
             type="file"
             accept="image/*"
@@ -195,11 +259,23 @@ const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
             {detailedImages.length} detailed image(s) selected (max 2)
           </p>
         </div>
-        {/* Video */}
         <div>
           <label className="block text-sm font-medium text-gray-600 mb-1">
             Video (Optional, max 30 seconds)
           </label>
+          {isEditing && recipeToEdit.videoUrl && (
+            <p className="text-sm text-gray-600 mb-1">
+              Current Video:{" "}
+              <a
+                href={recipeToEdit.videoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:underline"
+              >
+                View
+              </a>
+            </p>
+          )}
           <input
             type="file"
             accept="video/*"
@@ -212,13 +288,12 @@ const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
           )}
           {video && !videoDurationError && (
             <p className="text-sm text-gray-600 mt-1">
-              Video selected: {video.name}
+              New video selected: {video.name}
             </p>
           )}
         </div>
       </div>
 
-      {/* Submit and Cancel Buttons */}
       <div className="flex justify-end space-x-3">
         <button
           type="button"
@@ -231,7 +306,7 @@ const CreateRecipeForm = ({ onClose, onSubmitSuccess }) => {
           type="submit"
           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
         >
-          Create Recipe
+          {isEditing ? "Update Recipe" : "Create Recipe"}
         </button>
       </div>
     </form>

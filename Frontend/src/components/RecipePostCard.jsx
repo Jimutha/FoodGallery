@@ -1,11 +1,21 @@
 import { useState } from "react";
 import Modal from "./Modal";
+import CreateRecipeForm from "./CreateRecipeForm";
 
-const RecipePostCard = ({ post }) => {
-  const [showModal, setShowModal] = useState(false);
+const RecipePostCard = ({ post, onModify }) => {
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
-  const openModal = () => setShowModal(true);
-  const closeModal = () => setShowModal(false);
+  const openDetailsModal = () => setShowDetailsModal(true);
+  const closeDetailsModal = () => setShowDetailsModal(false);
+
+  const openEditModal = () => setShowEditModal(true);
+  const closeEditModal = () => setShowEditModal(false);
+
+  const handleEditSubmit = (updatedRecipe) => {
+    onModify(updatedRecipe); // Notify parent to update the recipe
+    closeEditModal();
+  };
 
   return (
     <>
@@ -16,22 +26,32 @@ const RecipePostCard = ({ post }) => {
           alt={post.title}
           className="w-full h-48 object-cover"
         />
-        {/* Title and View Details Button */}
-        <div className="p-4">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">
-            {post.title}
-          </h3>
-          <button
-            onClick={openModal}
-            className="inline-block text-blue-500 hover:text-blue-700 font-medium"
-          >
-            View Details
-          </button>
+        {/* Title, View Details, and Modify Buttons */}
+        <div className="p-4 flex justify-between items-center">
+          <h3 className="text-lg font-semibold text-gray-800">{post.title}</h3>
+          <div className="space-x-3">
+            <button
+              onClick={openDetailsModal}
+              className="inline-block text-blue-500 hover:text-blue-700 font-medium"
+            >
+              View Details
+            </button>
+            <button
+              onClick={openEditModal}
+              className="inline-block text-green-500 hover:text-green-700 font-medium"
+            >
+              Modify
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Modal for Recipe Details */}
-      <Modal isOpen={showModal} onClose={closeModal} title={post.title}>
+      {/* Modal for Viewing Recipe Details */}
+      <Modal
+        isOpen={showDetailsModal}
+        onClose={closeDetailsModal}
+        title={post.title}
+      >
         <div className="space-y-6">
           {/* Preview Image */}
           <div className="relative">
@@ -96,7 +116,6 @@ const RecipePostCard = ({ post }) => {
               >
                 Your browser does not support the video tag.
               </video>
-              {/* Play Button Overlay (Visible when Video is Not Playing) */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <button
                   className="bg-white/80 rounded-full p-4 hover:bg-white transition-colors"
@@ -118,16 +137,29 @@ const RecipePostCard = ({ post }) => {
             </div>
           )}
 
-          {/* Close Button */}
           <div className="flex justify-end">
             <button
-              onClick={closeModal}
+              onClick={closeDetailsModal}
               className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-full hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 shadow-lg"
             >
               Close
             </button>
           </div>
         </div>
+      </Modal>
+
+      {/* Modal for Editing Recipe */}
+      <Modal
+        isOpen={showEditModal}
+        onClose={closeEditModal}
+        title="Modify Recipe"
+      >
+        <CreateRecipeForm
+          onClose={closeEditModal}
+          onSubmitSuccess={handleEditSubmit}
+          recipeToEdit={post}
+          isEditing={true}
+        />
       </Modal>
     </>
   );
