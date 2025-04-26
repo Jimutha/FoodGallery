@@ -32,7 +32,7 @@
       content="Discover delicious recipes, beautiful food presentations, and decoration ideas"
     />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://food-gallery.example.com" />
+    <meta property="og:url" content="https://your-food-gallery-app.com" />
     <meta property="og:image" content="%PUBLIC_URL%/social-preview.jpg" />
 
     <!-- Twitter Card Meta Tags -->
@@ -53,7 +53,6 @@
     <!-- Preconnect to important origins -->
     <link rel="preconnect" href="https://fonts.gstatic.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://your-api-domain.com" />
 
     <!-- Preload critical resources -->
     <link
@@ -145,31 +144,5 @@
 
     <!-- React root -->
     <div id="root"></div>
-
-    <!-- Performance monitoring (optional) -->
-    <script>
-      // Track initial page load performance
-      window.addEventListener("load", function () {
-        if ("performance" in window) {
-          const timing = performance.timing;
-          const loadTime = timing.loadEventEnd - timing.navigationStart;
-          console.log("Page load time:", loadTime + "ms");
-        }
-      });
-
-      // Service Worker registration
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker.register("/service-worker.js").then(
-            (registration) => {
-              console.log("ServiceWorker registration successful");
-            },
-            (err) => {
-              console.log("ServiceWorker registration failed: ", err);
-            }
-          );
-        });
-      }
-    </script>
   </body>
 </html>
