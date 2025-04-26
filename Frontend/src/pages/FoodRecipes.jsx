@@ -14,7 +14,7 @@ const FoodRecipes = () => {
       try {
         setIsLoading(true);
         const response = await getPostsByCategory("RECIPE");
-        setRecipes(response.data);
+        setRecipes(response.data || []); // Ensure recipes is always an array
         setError(null);
       } catch (err) {
         console.error("Error fetching recipes:", err);
@@ -28,26 +28,32 @@ const FoodRecipes = () => {
   }, []);
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div
+      className="container mx-auto px-4 py-12"
+      style={{ backgroundColor: "#f0f0f0", minHeight: "100vh" }}
+    >
+      {/* Header Section with Title and Conditional Button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-4">
         <h1 className="text-3xl font-bold">Food Recipes</h1>
-        <Link
-          to="/recipes/create"
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors whitespace-nowrap"
-        >
-          + Create New Recipe
-        </Link>
+        {/* Show "Create New Recipe" button only if there are recipes */}
+        {recipes.length > 0 && !isLoading && !error && (
+          <Link
+            to="/recipes/create"
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors whitespace-nowrap"
+          >
+            + Create New Recipe
+          </Link>
+        )}
       </div>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-          {error}
-        </div>
-      )}
-
+      {/* Content Section */}
       {isLoading ? (
-        <div className="flex justify-center items-center min-h-[200px]">
+        <div className="flex justify-center">
           <LoadingSpinner />
+        </div>
+      ) : error ? (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 text-center">
+          {error}
         </div>
       ) : recipes.length === 0 ? (
         <div className="text-center py-12">
@@ -64,7 +70,7 @@ const FoodRecipes = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {recipes.map((recipe) => (
-            <FoodPostCard key={recipe.id} post={recipe} showCategory={false} />
+            <FoodPostCard key={recipe.id} post={recipe} />
           ))}
         </div>
       )}
