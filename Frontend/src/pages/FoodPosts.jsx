@@ -114,7 +114,7 @@ const FoodPostForm = () => {
             htmlFor="title"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Titles
+            Title
           </label>
           <input
             type="text"
