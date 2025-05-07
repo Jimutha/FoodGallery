@@ -8,7 +8,7 @@ const Addtip = () => {
   const editTip = location.state?.tip;
 
   const [formData, setFormData] = useState({
-    id: editTip?.id || Date.now().toString(), // Generate unique ID for new tips
+    id: editTip?.id || Date.now().toString(),
     title: editTip?.title || '',
     description: editTip?.description || '',
     category: editTip?.category || '',
@@ -32,6 +32,7 @@ const Addtip = () => {
         isVideo: editTip.mediaType === 'video',
       }));
       setPreviews(initialPreviews);
+      console.log("Initial previews from editTip:", initialPreviews);
     }
   }, [editTip]);
 
@@ -57,49 +58,71 @@ const Addtip = () => {
     }
 
     try {
-      // Convert media files to base64
       const mediaBase64 = await Promise.all(
         formData.media.map((file) =>
           file instanceof File
-            ? new Promise((resolve) => {
+            ? new Promise((resolve, reject) => {
                 const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
+                reader.onloadend = () => {
+                  const result = reader.result;
+                  if (typeof result === 'string' && result.startsWith('data:')) {
+                    console.log("Base64 result for file:", result.slice(0, 50) + "...");
+                    resolve(result);
+                  } else {
+                    console.error("Invalid base64 result:", result);
+                    reject(new Error("Invalid base64 format"));
+                  }
+                };
+                reader.onerror = () => {
+                  console.error("FileReader error for file:", file);
+                  reject(new Error("FileReader failed"));
+                };
                 reader.readAsDataURL(file);
               })
             : Promise.resolve(file)
         )
       );
+      console.log("Final mediaBase64 (first 50 chars of each):", mediaBase64.map(url => url.slice(0, 50) + "..."));
 
       const tipData = {
         ...formData,
         media: mediaBase64,
+        mediaUrls: mediaBase64,
       };
 
-      // Load existing tips from localStorage
       const existingTips = JSON.parse(localStorage.getItem('decorationTips') || '[]');
+      console.log("Existing tips before update:", existingTips);
 
-      if (editTip) {
-        // Update existing tip
-        const updatedTips = existingTips.map((tip) =>
-          tip.id === editTip.id ? tipData : tip
-        );
-        localStorage.setItem('decorationTips', JSON.stringify(updatedTips));
-      } else {
-        // Add new tip
-        localStorage.setItem(
-          'decorationTips',
-          JSON.stringify([...existingTips, tipData])
-        );
+      try {
+        if (editTip) {
+          const updatedTips = existingTips.map((tip) =>
+            tip.id === editTip.id ? tipData : tip
+          );
+          localStorage.setItem('decorationTips', JSON.stringify(updatedTips));
+        } else {
+          localStorage.setItem(
+            'decorationTips',
+            JSON.stringify([...existingTips, tipData])
+          );
+        }
+      } catch (storageError) {
+        console.error("Storage quota exceeded:", storageError);
+        localStorage.clear();
+        setError('Storage quota exceeded. Cleared data and please try again with smaller files.');
+        setIsSubmitting(false);
+        return;
       }
 
-      // Show success message
       alert('Successfully submitted!');
 
-      // Navigate to decorations page
-      navigate('/decorations');
+      if (editTip) {
+        navigate(`/decoration/${tipData.id}`, { state: { post: tipData } });
+      } else {
+        navigate('/decorations');
+      }
     } catch (err) {
       console.error('Error saving tip:', err);
-      setError('Failed to save tip. Please try again.');
+      setError('Failed to save tip. Please try again: ' + err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -135,6 +158,13 @@ const Addtip = () => {
         return;
       }
 
+      const maxFileSize = 1 * 1024 * 1024; // 1MB limit per file
+      const oversizedFiles = imageFiles.filter((file) => file.size > maxFileSize);
+      if (oversizedFiles.length > 0) {
+        setError('Each image must be less than 1MB. Please upload smaller images.');
+        return;
+      }
+
       const newPreviews = [];
       const newMedia = [...formData.media];
 
@@ -163,6 +193,12 @@ const Addtip = () => {
       const videoFile = files[0];
       if (!videoFile.type.match('video.*')) {
         setError('Please upload a video file');
+        return;
+      }
+
+      const maxVideoSize = 5 * 1024 * 1024; // 5MB limit for videos
+      if (videoFile.size > maxVideoSize) {
+        setError('Video must be less than 5MB. Please upload a smaller video.');
         return;
       }
 
@@ -412,8 +448,8 @@ const Addtip = () => {
                     <p className="text-gray-600 text-sm mb-4">or click to browse files</p>
                     <p className="text-gray-500 text-xs">
                       {formData.mediaType === 'images'
-                        ? 'Supports: JPG, PNG, GIF (Max 5MB each)'
-                        : 'Supports: MP4, MOV (Max 30 seconds)'}
+                        ? 'Supports: JPG, PNG, GIF (Max 1MB each)'
+                        : 'Supports: MP4, MOV (Max 5MB, 30 seconds)'}
                     </p>
                   </div>
                   <button
@@ -458,7 +494,7 @@ const Addtip = () => {
                 {previews.length} {previews.length === 1 ? 'file' : 'files'} selected
               </div>
               <div className="text-gray-500">
-                {formData.mediaType === 'images' ? 'Max 3 images' : 'Max 1 video'}
+                {formData.mediaType === 'images' ? 'Max 3 images (1MB each)' : 'Max 1 video (5MB)'}
               </div>
             </div>
 
