@@ -35,8 +35,8 @@ const Decorations = () => {
             return {
               ...tip,
               mediaUrls,
-              likes: tip.likes || 0, // Initialize likes if not present
-              comments: tip.comments || [], // Initialize comments if not present
+              likes: tip.likes || 0,
+              comments: tip.comments || [],
             };
           });
         console.log("Valid tips after transformation:", validTips);
@@ -73,7 +73,7 @@ const Decorations = () => {
   const handleAddComment = (id, comment) => {
     const updatedDecorations = decorations.map(decoration => {
       if (decoration.id === id) {
-        return { ...decoration, comments: [...decoration.comments, comment] };
+        return { ...decoration, comments: [...(decoration.comments || []), comment] };
       }
       return decoration;
     });
