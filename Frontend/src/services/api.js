@@ -1,41 +1,26 @@
-import axios from "axios";
-
-const API = axios.create({
-  baseURL: "http://localhost:8080/api",
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// Request interceptor
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+export const getPostsByCategory = async (category) => {
+  const response = await fetch(
+    `http://localhost:8080/api/posts/category/${category}`
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch posts");
   }
-  return config;
-});
+  return response.json();
+};
 
-// Response interceptor
-API.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "/login";
-    }
-    return Promise.reject(error);
+export const getPostById = async (id) => {
+  const response = await fetch(`http://localhost:8080/api/posts/${id}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch post");
   }
-);
+  return response.json();
+};
 
-// Auth endpoints
-export const registerUser = (userData) => API.post("/auth/register", userData);
-export const loginUser = (credentials) => API.post("/auth/login", credentials);
-
-// Post endpoints
-export const getPostsByCategory = (category) => API.get(`/posts/${category}`);
-export const getPostById = (id) => API.get(`/posts/${id}`);
-export const createPost = (postData) => API.post("/posts", postData);
-export const updatePost = (id, postData) => API.put(`/posts/${id}`, postData);
-export const deletePost = (id) => API.delete(`/posts/${id}`);
+export const deletePost = async (id) => {
+  const response = await fetch(`http://localhost:8080/api/posts/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new Error("Failed to delete post");
+  }
+};
