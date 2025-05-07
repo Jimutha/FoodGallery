@@ -16,6 +16,13 @@ const DecorationDetail = () => {
     navigate('/addtip', { state: { tip: post } });
   };
 
+  const handleDelete = () => {
+    const tips = JSON.parse(localStorage.getItem('decorationTips') || '[]');
+    const updatedTips = tips.filter((tip) => tip.id !== post.id);
+    localStorage.setItem('decorationTips', JSON.stringify(updatedTips));
+    navigate('/decorations');
+  };
+
   const mediaUrls = Array.isArray(post.mediaUrls) && post.mediaUrls.length > 0
     ? post.mediaUrls
     : Array.isArray(post.media)
@@ -50,7 +57,7 @@ const DecorationDetail = () => {
         )}
       </div>
       <div className="p-6">
-      <div className="flex flex-wrap gap-4 mb-6 text-sm">
+        <div className="flex flex-wrap gap-4 mb-6 text-sm">
           <span className="flex items-center">
             <i className="bi bi-person mr-1 text-indigo-500"></i>
             Author: {post.author || "Unknown"}
@@ -79,12 +86,20 @@ const DecorationDetail = () => {
         >
           Back
         </button>
-        <button
-          onClick={handleEdit}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Edit
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleEdit}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Edit
+          </button>
+          <button
+            onClick={handleDelete}
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Delete
+          </button>
+        </div>
       </div>
     </div>
   );
