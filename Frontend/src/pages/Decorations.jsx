@@ -13,17 +13,23 @@ const Decorations = () => {
       try {
         // Load tips from localStorage
         const tips = JSON.parse(localStorage.getItem('decorationTips') || '[]');
-        // Validate and filter tips
-        const validTips = tips.filter((tip) => {
-          return (
-            tip &&
-            typeof tip === 'object' &&
-            tip.id &&
-            tip.title &&
-            tip.description &&
-            (tip.media === undefined || Array.isArray(tip.media))
-          );
-        });
+        console.log("Tips from localStorage:", tips); // Debug
+        const validTips = tips
+          .filter((tip) => {
+            return (
+              tip &&
+              typeof tip === 'object' &&
+              tip.id &&
+              tip.title &&
+              tip.description &&
+              (tip.media === undefined || Array.isArray(tip.media))
+            );
+          })
+          .map(tip => ({
+            ...tip,
+            mediaUrls: tip.media || [] // Transform media to mediaUrls
+          }));
+        console.log("Valid Tips after transformation:", validTips); // Debug
         setDecorations(validTips);
       } catch (error) {
         console.error('Error fetching decorations:', error);
@@ -41,7 +47,7 @@ const Decorations = () => {
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-center mb-4"> Decorations</h1>
+      <h1 className="text-3xl font-bold text-center mb-4">Decorations</h1>
       <div className="flex justify-end mb-8">
         <button
           onClick={handleAddTip}
