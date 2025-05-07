@@ -65,9 +65,25 @@ const Dashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/"); // Redirect to homepage
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/"); // Redirect to homepage
+    } catch (err) {
+      setError(err.message || "Logout failed");
+    }
+  };
+
+  const handleDeleteProfile = async () => {
+    if (window.confirm("Are you sure you want to delete your profile? This action cannot be undone.")) {
+      try {
+        await auth.currentUser.delete();
+        await logout();
+        navigate("/login");
+      } catch (err) {
+        setError(err.message || "Delete profile failed");
+      }
+    }
   };
 
   if (!user) {
@@ -162,16 +178,24 @@ const Dashboard = () => {
                     <strong>Email:</strong> {user.email || "Not set"}
                   </p>
                   <p className="text-gray-700 text-lg">
-                    <strong>Joined:</strong> {user.createdAt || "Unknown"}
+                    <strong>Joined:</strong> {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "Unknown"}
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition duration-300 shadow-md"
-              >
-                Edit Profile
-              </button>
+              <div className="flex space-x-4">
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition duration-300 shadow-md"
+                >
+                  Edit Profile
+                </button>
+                <button
+                  onClick={handleDeleteProfile}
+                  className="bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition duration-300 shadow-md"
+                >
+                  Delete Profile
+                </button>
+              </div>
             </div>
           )}
         </div>
