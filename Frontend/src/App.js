@@ -8,6 +8,7 @@ import FoodRecipes from "./pages/FoodRecipes";
 import Decorations from "./pages/Decorations";
 import SinglePost from "./pages/SinglePost";
 import Addtip from "./pages/Addtip";
+import DecorationDetail from "./components/DecorationDetail";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/recipes" element={<FoodRecipes />} />
           <Route path="/decorations" element={<Decorations />} />
           <Route path="/addtip" element={<Addtip />} />
+          <Route path="/decoration/:id" element={<DecorationDetail />} />
           <Route path="/post/:id" element={<SinglePost />} />
         </Routes>
       </main>
