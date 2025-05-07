@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
 
 const Addtip = () => {
   const navigate = useNavigate();
@@ -9,6 +8,7 @@ const Addtip = () => {
   const editTip = location.state?.tip;
 
   const [formData, setFormData] = useState({
+    id: editTip?.id || Date.now().toString(), // Generate unique ID for new tips
     title: editTip?.title || '',
     description: editTip?.description || '',
     category: editTip?.category || '',
@@ -43,6 +43,8 @@ const Addtip = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError('');
+
     if (formData.mediaType === 'images' && formData.media.length === 0) {
       setError('Please upload at least one image');
       setIsSubmitting(false);
@@ -54,9 +56,9 @@ const Addtip = () => {
       return;
     }
 
-    let mediaBase64 = formData.media;
-    if (formData.media.some((m) => m instanceof File)) {
-      mediaBase64 = await Promise.all(
+    try {
+      // Convert media files to base64
+      const mediaBase64 = await Promise.all(
         formData.media.map((file) =>
           file instanceof File
             ? new Promise((resolve) => {
@@ -67,21 +69,36 @@ const Addtip = () => {
             : Promise.resolve(file)
         )
       );
-    }
 
-    const tipData = {
-      ...formData,
-      media: mediaBase64,
-    };
+      const tipData = {
+        ...formData,
+        media: mediaBase64,
+      };
 
-    try {
+      // Load existing tips from localStorage
+      const existingTips = JSON.parse(localStorage.getItem('decorationTips') || '[]');
+
       if (editTip) {
-        await axios.put(`http://localhost:8080/api/decoration-tips/${editTip.id}`, tipData);
+        // Update existing tip
+        const updatedTips = existingTips.map((tip) =>
+          tip.id === editTip.id ? tipData : tip
+        );
+        localStorage.setItem('decorationTips', JSON.stringify(updatedTips));
       } else {
-        await axios.post('http://localhost:8080/api/decoration-tips', tipData);
+        // Add new tip
+        localStorage.setItem(
+          'decorationTips',
+          JSON.stringify([...existingTips, tipData])
+        );
       }
-      navigate('/decorationtips');
+
+      // Show success message
+      alert('Successfully submitted!');
+
+      // Navigate to decorations page
+      navigate('/decorations');
     } catch (err) {
+      console.error('Error saving tip:', err);
       setError('Failed to save tip. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -208,13 +225,12 @@ const Addtip = () => {
   };
 
   const handleBack = () => {
-    navigate('/decorationtips');
+    navigate('/decorations');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-lg relative">
-        {/* Gradient top border */}
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-green-500 rounded-t-2xl"></div>
 
         <h1 className="text-3xl font-bold text-center mb-8 text-gray-800 relative pb-4 after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-24 after:h-1 after:bg-gradient-to-r after:from-indigo-500 after:to-green-500 after:rounded">
@@ -222,7 +238,6 @@ const Addtip = () => {
         </h1>
 
         <form onSubmit={handleSubmit}>
-          {/* Basic Information Section */}
           <div className="mb-8 p-6 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-shadow duration-300">
             <h2 className="text-2xl font-semibold mb-6 text-indigo-600 flex items-center">
               <i className="bi bi-person-badge mr-2"></i> Basic Information
@@ -317,7 +332,6 @@ const Addtip = () => {
             </div>
           </div>
 
-          {/* Tip Details Section */}
           <div className="mb-8 p-6 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-shadow duration-300">
             <h2 className="text-2xl font-semibold mb-6 text-indigo-600 flex items-center">
               <i className="bi bi-lightbulb mr-2"></i> Tip Details
@@ -340,7 +354,6 @@ const Addtip = () => {
             </div>
           </div>
 
-          {/* Media Upload Section */}
           <div className="mb-8 p-6 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-shadow duration-300">
             <h2 className="text-2xl font-semibold mb-6 text-indigo-600 flex items-center">
               <i className="bi bi-images mr-2"></i> Media Upload
@@ -452,7 +465,6 @@ const Addtip = () => {
             {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
           </div>
 
-          {/* Form Footer */}
           <div className="flex flex-col md:flex-row justify-between items-center mt-8 pt-6 border-t border-gray-200 gap-4">
             <div className="text-gray-600 text-sm flex items-center">
               <i className="bi bi-calendar mr-2"></i>
