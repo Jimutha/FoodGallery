@@ -1,13 +1,18 @@
-import React from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const DecorationDetail = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const post = location.state?.post;
 
   if (!post) {
     return <div className="container mx-auto px-4 py-12 text-center text-red-500">Item not found.</div>;
   }
+
+  const handleEdit = () => {
+    navigate('/addtip', { state: { tip: post } }); // Navigate to Addtip with post data
+  };
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -33,12 +38,20 @@ const DecorationDetail = () => {
           <p className="text-gray-500 text-sm">No media available.</p>
         )}
       </div>
-      <button
-        onClick={() => window.history.back()}
-        className="mt-6 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Back
-      </button>
+      <div className="mt-6 flex justify-between">
+        <button
+          onClick={() => window.history.back()}
+          className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Back
+        </button>
+        <button
+          onClick={handleEdit}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Edit
+        </button>
+      </div>
     </div>
   );
 };
