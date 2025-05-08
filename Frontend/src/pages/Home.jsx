@@ -1,18 +1,33 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import FoodPostCard from "../components/FoodPostCard";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { getPostsByCategory } from "../services/api";
 
 const Home = () => {
-  const [featuredPosts, setFeaturedPosts] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [comments, setComments] = useState({});
+  const [newComment, setNewComment] = useState({});
+  const [likes, setLikes] = useState({});
+  const [isLiked, setIsLiked] = useState({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const response = await getPostsByCategory("POST");
-        setFeaturedPosts(response.data.slice(0, 3));
+        setPosts(Array.isArray(response) ? response : []);
+        // Initialize comments, likes, and isLiked for each post
+        const initialComments = {};
+        const initialLikes = {};
+        const initialIsLiked = {};
+        response.forEach((post) => {
+          initialComments[post.id] = post.comments || [];
+          initialLikes[post.id] = post.likes || 0;
+          initialIsLiked[post.id] = false;
+        });
+        setComments(initialComments);
+        setLikes(initialLikes);
+        setIsLiked(initialIsLiked);
       } catch (error) {
         console.error("Error fetching posts:", error);
       } finally {
@@ -21,6 +36,28 @@ const Home = () => {
     };
     fetchPosts();
   }, []);
+
+  const handleAddComment = (postId, e) => {
+    e.preventDefault();
+    const comment = newComment[postId] || "";
+    if (comment.trim()) {
+      const updatedComments = [...(comments[postId] || []), comment];
+      setComments((prev) => ({ ...prev, [postId]: updatedComments }));
+      setNewComment((prev) => ({ ...prev, [postId]: "" }));
+    }
+  };
+
+  const handleLike = (postId) => {
+    const currentLikes = likes[postId] || 0;
+    const currentIsLiked = isLiked[postId] || false;
+    if (currentIsLiked) {
+      setLikes((prev) => ({ ...prev, [postId]: currentLikes - 1 }));
+      setIsLiked((prev) => ({ ...prev, [postId]: false }));
+    } else {
+      setLikes((prev) => ({ ...prev, [postId]: currentLikes + 1 }));
+      setIsLiked((prev) => ({ ...prev, [postId]: true }));
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -58,19 +95,95 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Posts */}
+      {/* Posts Section */}
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
-          Featured Food Posts
+          All Food Posts
         </h2>
         {isLoading ? (
           <div className="flex justify-center">
             <LoadingSpinner />
           </div>
+        ) : posts.length === 0 ? (
+          <div className="text-center text-gray-500">
+            No posts available. Create a new post from the{" "}
+            <Link to="/posts" className="text-blue-500 underline">
+              Create Post
+            </Link>{" "}
+            page.
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {featuredPosts.map((post) => (
-              <FoodPostCard key={post.id} post={post} />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {posts.map((post) => (
+              <div key={post.id} className="bg-white rounded-lg shadow-md p-4">
+                <div className="relative">
+                  {post.mediaUrls && post.mediaUrls.length > 0 ? (
+                    <img
+                      src={post.mediaUrls[0]}
+                      alt={post.title}
+                      className="w-full h-48 object-cover rounded-md"
+                    />
+                  ) : (
+                    <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                      <span className="text-gray-500">No Image Available</span>
+                    </div>
+                  )}
+                </div>
+                <h3 className="text-xl font-bold mt-2">{post.title}</h3>
+                <p className="text-gray-700 text-sm mt-2 line-clamp-3">
+                  {post.description}
+                </p>
+                <div className="mt-2 text-red-500 font-semibold">
+                  {likes[post.id] || 0} Likes
+                </div>
+                <div className="mt-2">
+                  <button
+                    onClick={() => handleLike(post.id)}
+                    className={`px-3 py-1 rounded-md ${
+                      isLiked[post.id] ? "bg-red-500" : "bg-gray-300"
+                    } text-white text-sm hover:bg-opacity-80`}
+                  >
+                    {isLiked[post.id] ? "Unlike" : "Like"}
+                  </button>
+                </div>
+                <div className="mt-2">
+                  <h4 className="text-sm font-semibold">Comments</h4>
+                  {comments[post.id] && comments[post.id].length > 0 ? (
+                    <ul className="list-disc pl-5 mt-1 text-sm">
+                      {comments[post.id].map((comment, index) => (
+                        <li key={index} className="text-gray-700">
+                          {comment}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-500 text-sm">No comments yet.</p>
+                  )}
+                  <form
+                    onSubmit={(e) => handleAddComment(post.id, e)}
+                    className="flex gap-2 mt-1"
+                  >
+                    <input
+                      type="text"
+                      value={newComment[post.id] || ""}
+                      onChange={(e) =>
+                        setNewComment((prev) => ({
+                          ...prev,
+                          [post.id]: e.target.value,
+                        }))
+                      }
+                      placeholder="Add a comment..."
+                      className="flex-1 p-1 border border-gray-300 rounded-md text-sm"
+                    />
+                    <button
+                      type="submit"
+                      className="px-2 py-1 bg-indigo-500 text-white rounded-md text-sm hover:bg-indigo-600"
+                    >
+                      Post
+                    </button>
+                  </form>
+                </div>
+              </div>
             ))}
           </div>
         )}
