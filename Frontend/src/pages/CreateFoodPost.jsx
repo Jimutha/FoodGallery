@@ -89,7 +89,7 @@ const CreateFoodPost = () => {
       submissionData.append("title", formData.title);
       submissionData.append("description", formData.description);
       media.forEach((item) => {
-        submissionData.append("media", item.file); // Match backend's expected key
+        submissionData.append("media", item.file);
       });
 
       const response = await fetch("http://localhost:8080/api/posts", {
@@ -101,11 +101,26 @@ const CreateFoodPost = () => {
         throw new Error("Failed to create post");
       }
 
+      const createdPost = await response.json();
+
+      // Prepare data for Home page (since Home doesn't connect to backend)
+      const newPost = {
+        id: createdPost.id || Date.now().toString(),
+        title: formData.title,
+        description: formData.description,
+        mediaUrls: media.map((item) => item.preview),
+        comments: [],
+        likes: 0,
+      };
+
+      // Store the new post in localStorage to access in Home
+      localStorage.setItem("newPost", JSON.stringify(newPost));
+
       setFormData({ title: "", description: "" });
       setMedia([]);
       setError("");
       alert("Post created successfully!");
-      navigate("/post-details"); // Redirect to PostDetails page
+      navigate("/post-details");
     } catch (err) {
       setError("Error creating post. Please try again.");
     } finally {
