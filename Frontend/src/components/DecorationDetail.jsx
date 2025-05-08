@@ -82,7 +82,9 @@ const DecorationDetail = () => {
           <h2 className="text-xl font-semibold mb-2">Comments</h2>
           {post.comments && post.comments.length > 0 ? (
             post.comments.map((comment, index) => (
-              <p key={index} className="text-gray-600 text-sm mb-1">{comment}</p>
+              <p key={index} className="text-gray-600 text-sm mb-1">
+                {comment.text || 'No text'}
+              </p>
             ))
           ) : (
             <p className="text-gray-500 text-sm">No comments yet.</p>

@@ -31,12 +31,25 @@ const Decorations = () => {
                   typeof media === 'string' && media.startsWith('data:image/')
                 )
               : [];
+            const formattedComments = Array.isArray(tip.comments)
+              ? tip.comments.map(c => {
+                  if (typeof c === 'string') {
+                    return { text: c, replies: [], reactions: 0 };
+                  }
+                  return {
+                    text: c.text || '',
+                    replies: Array.isArray(c.replies) ? c.replies : [],
+                    reactions: typeof c.reactions === 'number' ? c.reactions : 0
+                  };
+                })
+              : [];
             console.log("Transformed mediaUrls for tip", tip.id, ":", mediaUrls);
+            console.log("Formatted comments for tip", tip.id, ":", formattedComments);
             return {
               ...tip,
               mediaUrls,
               likes: tip.likes || 0,
-              comments: tip.comments || [],
+              comments: formattedComments,
             };
           });
         console.log("Valid tips after transformation:", validTips);
@@ -73,7 +86,10 @@ const Decorations = () => {
   const handleAddComment = (id, comment) => {
     const updatedDecorations = decorations.map(decoration => {
       if (decoration.id === id) {
-        return { ...decoration, comments: [...(decoration.comments || []), comment] };
+        return { 
+          ...decoration, 
+          comments: [...(decoration.comments || []), { text: comment, replies: [], reactions: 0 }]
+        };
       }
       return decoration;
     });
