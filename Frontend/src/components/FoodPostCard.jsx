@@ -1,7 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const FoodPostCard = ({ post, onClick, onLike, onAddComment }) => {
   const [commentText, setCommentText] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => 
+        prevIndex === (post.mediaUrls?.length - 1 || 0) ? 0 : prevIndex + 1
+      );
+    }, 4000); // Change image every 4 seconds
+    return () => clearInterval(interval); // Cleanup interval on unmount
+  }, [post.mediaUrls]);
 
   const handleCommentSubmit = (e) => {
     e.preventDefault();
@@ -17,16 +27,28 @@ const FoodPostCard = ({ post, onClick, onLike, onAddComment }) => {
       onClick={onClick}
     >
       {post.mediaUrls && post.mediaUrls.length > 0 ? (
-        <img
-          src={post.mediaUrls[0]}
-          alt={post.title || "Decoration Image"}
-          className="w-full h-80 object-cover"
-          onError={(e) => {
-            console.error(`Image load failed for URL: ${post.mediaUrls[0].slice(0, 50)}...`, e);
-            e.target.src = "https://via.placeholder.com/300?text=Image+Failed+to+Load";
-          }}
-          onLoad={() => console.log(`Image loaded successfully: ${post.mediaUrls[0].slice(0, 50)}...`)}
-        />
+        <div className="w-full h-80 flex overflow-hidden relative">
+          {post.mediaUrls.map((url, index) => (
+            <div
+              key={index}
+              className={`w-full h-80 flex-shrink-0 transition-opacity duration-1000 ${
+                index === currentIndex ? 'opacity-100' : 'opacity-0'
+              }`}
+              style={{ position: 'absolute', top: 0, left: 0 }}
+            >
+              <img
+                src={url}
+                alt={`${post.title || "Decoration"} Image ${index + 1}`}
+                className="w-full h-80 object-cover"
+                onError={(e) => {
+                  console.error(`Image load failed for URL: ${url.slice(0, 50)}...`, e);
+                  e.target.src = "https://via.placeholder.com/300?text=Image+Failed+to+Load";
+                }}
+                onLoad={() => console.log(`Image loaded successfully: ${url.slice(0, 50)}...`)}
+              />
+            </div>
+          ))}
+        </div>
       ) : (
         <div className="w-full h-80 bg-gray-200 flex items-center justify-center">
           <p className="text-gray-500">No image available</p>
@@ -38,13 +60,13 @@ const FoodPostCard = ({ post, onClick, onLike, onAddComment }) => {
             <i className="bi bi-person mr-1"></i>
             Author: {post.author || "Unknown"}
           </span>
-          <span className="flex items-center text-base text-black">
+          <span className="flex items-center text-base text-black ">
             <i className="bi bi-bar-chart mr-1"></i>
             Difficulty: {post.difficulty || "N/A"}
           </span>
           <span className="flex items-center text-base text-black">
             <i className="bi bi-calendar mr-1"></i>
-            Created: {post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : "N/A"}
+            Created Date: {post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : "N/A"}
           </span>
         </div>
       </div>
