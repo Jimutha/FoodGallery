@@ -8,7 +8,6 @@ const Home = () => {
   const [comments, setComments] = useState({});
   const [newComment, setNewComment] = useState({});
   const [likes, setLikes] = useState({});
-  const [isLiked, setIsLiked] = useState({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -16,18 +15,15 @@ const Home = () => {
       try {
         const response = await getPostsByCategory("POST");
         setPosts(Array.isArray(response) ? response : []);
-        // Initialize comments, likes, and isLiked for each post
+        // Initialize comments and likes for each post
         const initialComments = {};
         const initialLikes = {};
-        const initialIsLiked = {};
         response.forEach((post) => {
           initialComments[post.id] = post.comments || [];
           initialLikes[post.id] = post.likes || 0;
-          initialIsLiked[post.id] = false;
         });
         setComments(initialComments);
         setLikes(initialLikes);
-        setIsLiked(initialIsLiked);
       } catch (error) {
         console.error("Error fetching posts:", error);
       } finally {
@@ -49,13 +45,13 @@ const Home = () => {
 
   const handleLike = (postId) => {
     const currentLikes = likes[postId] || 0;
-    const currentIsLiked = isLiked[postId] || false;
-    if (currentIsLiked) {
+    setLikes((prev) => ({ ...prev, [postId]: currentLikes + 1 }));
+  };
+
+  const handleUnlike = (postId) => {
+    const currentLikes = likes[postId] || 0;
+    if (currentLikes > 0) {
       setLikes((prev) => ({ ...prev, [postId]: currentLikes - 1 }));
-      setIsLiked((prev) => ({ ...prev, [postId]: false }));
-    } else {
-      setLikes((prev) => ({ ...prev, [postId]: currentLikes + 1 }));
-      setIsLiked((prev) => ({ ...prev, [postId]: true }));
     }
   };
 
@@ -136,14 +132,18 @@ const Home = () => {
                 <div className="mt-2 text-red-500 font-semibold">
                   {likes[post.id] || 0} Likes
                 </div>
-                <div className="mt-2">
+                <div className="mt-2 flex gap-2">
                   <button
                     onClick={() => handleLike(post.id)}
-                    className={`px-3 py-1 rounded-md ${
-                      isLiked[post.id] ? "bg-red-500" : "bg-gray-300"
-                    } text-white text-sm hover:bg-opacity-80`}
+                    className="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-gray-300"
                   >
-                    {isLiked[post.id] ? "Unlike" : "Like"}
+                    Like
+                  </button>
+                  <button
+                    onClick={() => handleUnlike(post.id)}
+                    className="px-3 py-1 bg-red-500 text-white rounded-md text-sm hover:bg-gray-300"
+                  >
+                    Unlike
                   </button>
                 </div>
                 <div className="mt-2">
