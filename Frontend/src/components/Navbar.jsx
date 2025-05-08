@@ -19,41 +19,13 @@ const Navbar = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // No navigation needed, search will filter navbar items directly
+    if (searchQuery.trim()) {
+      // Placeholder for search functionality
+      console.log("Searching for:", searchQuery);
+      // You can implement your search logic here, e.g., redirect to a search results page
+      // window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`;
+    }
   };
-
-  // Navigation items for filtering
-  const navItems = [
-    { to: "/post-details", label: "Food Posts" },
-    { to: "/recipes", label: "Food Recipes" },
-    { to: "/decorations", label: "Food Decorations" },
-  ];
-
-  const authItems = isLoggedIn
-    ? [
-        { to: "/dashboard", label: "Dashboard" },
-        { label: "Logout", onClick: handleLogout },
-      ]
-    : [
-        { to: "/login", label: "Login" },
-        { to: "/register", label: "Sign Up" },
-      ];
-
-  // Highlight matching text
-  const highlightText = (text) => {
-    if (!searchQuery.trim()) return text;
-    const regex = new RegExp(`(${searchQuery})`, "gi");
-    return text.replace(regex, '<span class="bg-yellow-200">$1</span>');
-  };
-
-  // Filter navigation items based on search query
-  const filteredNavItems = navItems.filter((item) =>
-    item.label.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const filteredAuthItems = authItems.filter((item) =>
-    item.label.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50">
@@ -71,7 +43,7 @@ const Navbar = () => {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search navbar items..."
+                  placeholder="Search posts, recipes..."
                   className="px-3 py-1.5 rounded-l-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm w-48 md:w-64"
                 />
                 <button
@@ -97,52 +69,62 @@ const Navbar = () => {
             </div>
 
             {/* Navigation Links */}
-            {filteredNavItems.length > 0 && (
-              <div className="hidden md:ml-4 md:flex md:space-x-8">
-                {filteredNavItems.map((item) => (
-                  <Link
-                    key={item.label}
-                    to={item.to}
-                    className="text-gray-500 hover:text-primary-500 px-3 py-2 text-sm font-medium"
-                    dangerouslySetInnerHTML={{
-                      __html: highlightText(item.label),
-                    }}
-                  />
-                ))}
-              </div>
-            )}
+            <div className="hidden md:ml-4 md:flex md:space-x-8">
+              <Link
+                to="/post-details"
+                className="text-gray-500 hover:text-primary-500 px-3 py-2 text-sm font-medium"
+              >
+                Food Posts
+              </Link>
+              <Link
+                to="/recipes"
+                className="text-gray-500 hover:text-primary-500 px-3 py-2 text-sm font-medium"
+              >
+                Food Recipies
+              </Link>
+              <Link
+                to="/decorations"
+                className="text-gray-500 hover:text-primary-500 px-3 py-2 text-sm font-medium"
+              >
+                Food Decorations
+              </Link>
+            </div>
           </div>
 
           {/* Auth Links */}
-          {filteredAuthItems.length > 0 && (
-            <div className="hidden md:flex items-center space-x-4">
-              {filteredAuthItems.map((item) =>
-                item.onClick ? (
-                  <button
-                    key={item.label}
-                    onClick={item.onClick}
-                    className="bg-primary-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-600"
-                    dangerouslySetInnerHTML={{
-                      __html: highlightText(item.label),
-                    }}
-                  />
-                ) : (
-                  <Link
-                    key={item.label}
-                    to={item.to}
-                    className={
-                      item.label === "Sign Up"
-                        ? "bg-primary-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-600"
-                        : "text-gray-500 hover:text-primary-500 px-3 py-2 text-sm font-medium"
-                    }
-                    dangerouslySetInnerHTML={{
-                      __html: highlightText(item.label),
-                    }}
-                  />
-                )
-              )}
-            </div>
-          )}
+          <div className="hidden md:flex items-center space-x-4">
+            {isLoggedIn ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  className="text-gray-500 hover:text-primary-500 px-3 py-2 text-sm font-medium"
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="bg-primary-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-600"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-gray-500 hover:text-primary-500 px-3 py-2 text-sm font-medium"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="bg-primary-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-600"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </nav>
