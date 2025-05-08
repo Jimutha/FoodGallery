@@ -57,7 +57,7 @@ const DecorationDetail = () => {
         )}
       </div>
       <div className="p-6">
-        <div className="flex flex-wrap gap-4 mb-6 text-sm">
+        <div className="flex flex-wrap gap-4 mb-6 text-3xl font-semibold">
           <span className="flex items-center">
             <i className="bi bi-person mr-1 text-indigo-500"></i>
             Author: {post.author || "Unknown"}
@@ -75,11 +75,11 @@ const DecorationDetail = () => {
             Created: {post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : "N/A"}
           </span>
         </div>
-        <h1 className="text-3xl font-bold mb-4">{post.title || "Untitled"}</h1>
+        <h1 className="text-5xl font-bold mb-4">{post.title || "Untitled"}</h1>
         <p className="text-gray-600 mb-4">{post.description || "No description"}</p>
         <p className="text-gray-600 mb-4">Tip: {post.tip || "No tip provided"}</p>
         <div className="comment-section mb-6">
-          <h2 className="text-xl font-semibold mb-2">Comments</h2>
+          <h2 className="text-4xl font-semibold mb-2">Comments</h2>
           {post.comments && post.comments.length > 0 ? (
             post.comments.map((comment, index) => (
               <p key={index} className="text-gray-600 text-sm mb-1">
