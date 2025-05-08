@@ -76,13 +76,13 @@ const Home = () => {
             <div className="flex gap-4 justify-center">
               <Link
                 to="/register"
-                className="px-6 py-3 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition duration-300"
+                className="px-6 py-1 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition duration-300"
               >
                 Join Our Community
               </Link>
               <Link
                 to="/posts"
-                className="px-6 py-3 bg-white text-primary-500 font-medium rounded-lg hover:bg-gray-100 transition duration-300"
+                className="px-6 py-1 bg-white text-primary-500 font-medium rounded-lg hover:bg-gray-100 transition duration-300"
               >
                 Explore Posts
               </Link>
@@ -135,15 +135,41 @@ const Home = () => {
                 <div className="mt-2 flex gap-2">
                   <button
                     onClick={() => handleLike(post.id)}
-                    className="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-gray-300"
+                    className="p-1 bg-green-500 text-white rounded-md hover:bg-green-600"
                   >
-                    Like
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                      />
+                    </svg>
                   </button>
                   <button
                     onClick={() => handleUnlike(post.id)}
-                    className="px-3 py-1 bg-red-500 text-white rounded-md text-sm hover:bg-gray-300"
+                    className="p-1 bg-gray-400 text-white rounded-md hover:bg-red-600"
                   >
-                    Unlike
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.737 3h4.017c.163 0 .326.02.485.06L17 4m-7 10v-5a2 2 0 012-2h2m-2 10h-2M17 4h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"
+                      />
+                    </svg>
                   </button>
                 </div>
                 <div className="mt-2">
