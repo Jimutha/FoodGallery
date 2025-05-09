@@ -135,7 +135,7 @@ const Home = () => {
                 <div className="mt-2 flex gap-2">
                   <button
                     onClick={() => handleLike(post.id)}
-                    className="p-1 bg-green-500 text-white rounded-md hover:bg-green-600"
+                    className="p-1 bg-gray-300 text-white rounded-md hover:bg-green-600"
                   >
                     <svg
                       className="w-6 h-6"
@@ -154,7 +154,7 @@ const Home = () => {
                   </button>
                   <button
                     onClick={() => handleUnlike(post.id)}
-                    className="p-1 bg-gray-400 text-white rounded-md hover:bg-red-600"
+                    className="p-1 bg-gray-300 text-white rounded-md hover:bg-red-600"
                   >
                     <svg
                       className="w-6 h-6"
