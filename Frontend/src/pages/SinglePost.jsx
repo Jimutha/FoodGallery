@@ -76,7 +76,7 @@ const SinglePost = () => {
             onClick={() => navigate(`/update-posts/${id}`)}
             className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
           >
-            Update
+            Update Post
           </button>
           <button
             onClick={handleDelete}
