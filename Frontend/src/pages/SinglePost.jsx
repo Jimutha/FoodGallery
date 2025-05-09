@@ -15,8 +15,9 @@ const SinglePost = () => {
       try {
         const response = await getPostById(id);
         setPost(response);
+        setError(null);
       } catch (err) {
-        setError("Failed to load post. Please try again.");
+        setError(`Failed to load post: ${err.message}`);
       } finally {
         setIsLoading(false);
       }
@@ -31,7 +32,7 @@ const SinglePost = () => {
         alert("Post deleted successfully!");
         navigate("/post-details");
       } catch (err) {
-        setError("Failed to delete post. Please try again.");
+        setError(`Failed to delete post: ${err.message}`);
       }
     }
   };
@@ -72,10 +73,10 @@ const SinglePost = () => {
         </div>
         <div className="flex justify-between">
           <button
-            onClick={() => navigate("/post-details")}
+            onClick={() => navigate(`/update-posts/${id}`)}
             className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
           >
-            Back to Posts
+            Update
           </button>
           <button
             onClick={handleDelete}
