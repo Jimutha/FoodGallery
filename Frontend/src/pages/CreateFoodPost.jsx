@@ -36,7 +36,6 @@ const CreateFoodPost = () => {
       setError("You can upload a maximum of 3 media files.");
       return;
     }
-
     if (totalMedia < 1) {
       setError("Please upload at least 1 media file.");
       return;
@@ -51,11 +50,7 @@ const CreateFoodPost = () => {
           return;
         }
       }
-      validMedia.push({
-        file,
-        preview: URL.createObjectURL(file),
-        type: file.type.startsWith("video/") ? "video" : "image",
-      });
+      validMedia.push(file);
     }
 
     setError("");
@@ -88,8 +83,8 @@ const CreateFoodPost = () => {
       const submissionData = new FormData();
       submissionData.append("title", formData.title);
       submissionData.append("description", formData.description);
-      media.forEach((item) => {
-        submissionData.append("media", item.file); // Match backend's expected key
+      media.forEach((file) => {
+        submissionData.append("media", file);
       });
 
       const response = await fetch("http://localhost:8080/api/posts", {
@@ -101,11 +96,13 @@ const CreateFoodPost = () => {
         throw new Error("Failed to create post");
       }
 
+      await response.json(); // Parse the response but don't store it
+
       setFormData({ title: "", description: "" });
       setMedia([]);
       setError("");
       alert("Post created successfully!");
-      navigate("/post-details"); // Redirect to PostDetails page
+      navigate("/post-details");
     } catch (err) {
       setError("Error creating post. Please try again.");
     } finally {
@@ -181,17 +178,17 @@ const CreateFoodPost = () => {
 
           {media.length > 0 && (
             <div className="mt-4 grid grid-cols-3 gap-4">
-              {media.map((item, index) => (
+              {media.map((file, index) => (
                 <div key={index} className="relative">
-                  {item.type === "image" ? (
+                  {file.type.startsWith("image/") ? (
                     <img
-                      src={item.preview}
+                      src={URL.createObjectURL(file)}
                       alt={`Preview ${index + 1}`}
                       className="w-full h-32 object-cover rounded-md"
                     />
                   ) : (
                     <video
-                      src={item.preview}
+                      src={URL.createObjectURL(file)}
                       className="w-full h-32 object-cover rounded-md"
                       controls
                     />

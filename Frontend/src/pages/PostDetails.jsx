@@ -6,14 +6,13 @@ import { getPostsByCategory } from "../services/api";
 const PostDetails = () => {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null); // Add error state
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const response = await getPostsByCategory("POST");
-        // Ensure response is an array before setting state
         setPosts(Array.isArray(response) ? response : []);
       } catch (error) {
         console.error("Error fetching posts:", error);
@@ -80,18 +79,28 @@ const PostDetails = () => {
               className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => handlePostClick(post.id)}
             >
-              {/* Image with Title and More Options */}
+              {/* Image or Video with Title and More Options */}
               <div className="relative">
                 {post.mediaUrls && post.mediaUrls.length > 0 ? (
-                  <img
-                    src={post.mediaUrls[0]} // Display the first image
-                    alt={post.title}
-                    className="w-full h-64 object-cover"
-                    onError={(e) => (e.target.src = "/placeholder-image.jpg")}
-                  />
+                  post.mediaUrls[0].startsWith("data:image/") ? (
+                    <img
+                      src={post.mediaUrls[0]}
+                      alt={post.title}
+                      className="w-full h-64 object-cover"
+                      onError={(e) => (e.target.src = "/placeholder-image.jpg")}
+                    />
+                  ) : (
+                    <video
+                      src={post.mediaUrls[0]}
+                      className="w-full h-64 object-cover"
+                      controls
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  )
                 ) : (
                   <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-500">No Image Available</span>
+                    <span className="text-gray-500">No Media Available</span>
                   </div>
                 )}
                 {/* Title in Bottom-Left Corner */}
