@@ -68,7 +68,7 @@ const Home = () => {
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
           <div className="text-center px-4">
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Welcome to FOOD GALLERY
+              Welcome to FOOD GALLERY!
             </h1>
             <p className="text-xl text-gray-100 mb-8 max-w-2xl mx-auto">
               Discover delicious recipes and beautiful food presentations
