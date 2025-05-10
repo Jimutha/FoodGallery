@@ -68,7 +68,7 @@ const Home = () => {
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
           <div className="text-center px-4">
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Welcome to FOOD GALLERY
+              Welcome to FOOD GALLERY!
             </h1>
             <p className="text-xl text-gray-100 mb-8 max-w-2xl mx-auto">
               Discover delicious recipes and beautiful food presentations
@@ -114,14 +114,24 @@ const Home = () => {
               <div key={post.id} className="bg-white rounded-lg shadow-md p-4">
                 <div className="relative">
                   {post.mediaUrls && post.mediaUrls.length > 0 ? (
-                    <img
-                      src={post.mediaUrls[0]}
-                      alt={post.title}
-                      className="w-full h-48 object-cover rounded-md"
-                    />
+                    post.mediaUrls[0].startsWith("data:image/") ? (
+                      <img
+                        src={post.mediaUrls[0]}
+                        alt={post.title}
+                        className="w-full h-48 object-cover rounded-md"
+                      />
+                    ) : (
+                      <video
+                        src={post.mediaUrls[0]}
+                        className="w-full h-48 object-cover rounded-md"
+                        controls
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+                    )
                   ) : (
                     <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                      <span className="text-gray-500">No Image Available</span>
+                      <span className="text-gray-500">No Media Available</span>
                     </div>
                   )}
                 </div>
