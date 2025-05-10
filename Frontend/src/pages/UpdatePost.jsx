@@ -27,36 +27,43 @@ const UpdatePost = () => {
     fetchPost();
   }, [id]);
 
-  const handleMediaChange = (e) => {
+  const validateVideoDuration = (file) => {
+    return new Promise((resolve) => {
+      const videoElement = document.createElement("video");
+      videoElement.src = URL.createObjectURL(file);
+      videoElement.onloadedmetadata = () => {
+        resolve(videoElement.duration <= 30);
+      };
+      videoElement.onerror = () => resolve(false);
+    });
+  };
+
+  const handleMediaChange = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length + existingMediaUrls.length > 3) {
       setError("You can upload a maximum of 3 media files.");
       return;
     }
 
-    const validFiles = files.filter((file) => {
+    const validFilesPromises = files.map(async (file) => {
       if (file.type.startsWith("video/")) {
-        const videoElement = document.createElement("video");
-        videoElement.src = URL.createObjectURL(file);
-        return new Promise((resolve) => {
-          videoElement.onloadedmetadata = () => {
-            resolve(videoElement.duration <= 30);
-          };
-          videoElement.onerror = () => resolve(false);
-        }).then((isValid) => {
-          if (!isValid) {
-            setError("Videos must be 30 seconds or less.");
-          }
-          return isValid;
-        });
+        const isValidDuration = await validateVideoDuration(file);
+        if (!isValidDuration) {
+          setError("Videos must be 30 seconds or less.");
+          return null;
+        }
       }
-      return true;
+      return file;
     });
 
-    Promise.all(validFiles).then((filteredFiles) => {
-      setMedia((prevMedia) => [...prevMedia, ...filteredFiles]);
-      setError(null);
-    });
+    const validFiles = (await Promise.all(validFilesPromises)).filter(Boolean);
+
+    if (validFiles.length !== files.length) {
+      return; // Error already set in validateVideoDuration
+    }
+
+    setMedia((prevMedia) => [...prevMedia, ...validFiles]);
+    setError(null);
   };
 
   const removeExistingMedia = (index) => {
@@ -167,11 +174,21 @@ const UpdatePost = () => {
             <div className="mt-4 grid grid-cols-2 gap-2">
               {existingMediaUrls.map((url, index) => (
                 <div key={`existing-${index}`} className="relative">
-                  <img
-                    src={url}
-                    alt={`Existing Media ${index + 1}`}
-                    className="w-full h-32 object-cover rounded-md"
-                  />
+                  {url.startsWith("data:image/") ? (
+                    <img
+                      src={url}
+                      alt={`Existing Media ${index + 1}`}
+                      className="w-full h-32 object-cover rounded-md"
+                    />
+                  ) : (
+                    <video
+                      src={url}
+                      className="w-full h-32 object-cover rounded-md"
+                      controls
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  )}
                   <button
                     type="button"
                     onClick={() => removeExistingMedia(index)}
@@ -183,11 +200,21 @@ const UpdatePost = () => {
               ))}
               {media.map((file, index) => (
                 <div key={`new-${index}`} className="relative">
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt={`New Media ${index + 1}`}
-                    className="w-full h-32 object-cover rounded-md"
-                  />
+                  {file.type.startsWith("image/") ? (
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt={`New Media ${index + 1}`}
+                      className="w-full h-32 object-cover rounded-md"
+                    />
+                  ) : (
+                    <video
+                      src={URL.createObjectURL(file)}
+                      className="w-full h-32 object-cover rounded-md"
+                      controls
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  )}
                   <button
                     type="button"
                     onClick={() => removeNewMedia(index)}
