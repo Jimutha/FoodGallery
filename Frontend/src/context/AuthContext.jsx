@@ -34,8 +34,19 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+
+  // Update user profile (e.g., after editing profile details)
+  const updateUserProfile = (updatedUserData) => {
+    localStorage.setItem("user", JSON.stringify(updatedUserData));
+    setUser(updatedUserData);
+  };
+
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, updateUserProfile }}>
+
   return (
     <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+
       {children}
     </AuthContext.Provider>
   );
@@ -43,5 +54,6 @@ export const AuthProvider = ({ children }) => {
 
 // Custom hook to use the AuthContext
 export const useAuth = () => useContext(AuthContext);
+
 
 export default AuthContext;

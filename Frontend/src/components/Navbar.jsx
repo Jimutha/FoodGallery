@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import React from 'react';
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -67,7 +68,8 @@ const Navbar = () => {
                 to="/recipes"
                 className="text-gray-500 hover:text-primary-500 px-3 py-2 text-sm font-medium"
               >
-                Food Recipies
+                Food Recipes
+
               </Link>
               <Link
                 to="/decorations"
