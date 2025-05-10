@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
@@ -273,6 +274,10 @@ const Login = () => {
       ></div>
     </div>
   );
+import React from "react";
+
+const Login = () => {
+  return <div></div>;
 };
 
 export default Login;
