@@ -66,7 +66,7 @@ const FoodPostCard = ({ post, onClick, onLike, onAddComment }) => {
           </span>
           <span className="flex items-center text-base text-black">
             <i className="bi bi-calendar mr-1"></i>
-            Created Date: {post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : "N/A"}
+            Created : {post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : "N/A"}
           </span>
         </div>
       </div>
