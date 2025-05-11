@@ -15,8 +15,9 @@ const SinglePost = () => {
       try {
         const response = await getPostById(id);
         setPost(response);
+        setError(null);
       } catch (err) {
-        setError("Failed to load post. Please try again.");
+        setError(`Failed to load post: ${err.message}`);
       } finally {
         setIsLoading(false);
       }
@@ -31,7 +32,7 @@ const SinglePost = () => {
         alert("Post deleted successfully!");
         navigate("/post-details");
       } catch (err) {
-        setError("Failed to delete post. Please try again.");
+        setError(`Failed to delete post: ${err.message}`);
       }
     }
   };
@@ -60,22 +61,33 @@ const SinglePost = () => {
         <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
         <p className="text-gray-600 mb-6">{post.description}</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {post.mediaUrls.map((url, index) => (
-            <img
-              key={index}
-              src={url}
-              alt={`Media ${index + 1}`}
-              className="w-full h-48 object-cover rounded-md"
-              onError={(e) => (e.target.src = "/placeholder-image.jpg")}
-            />
-          ))}
+          {post.mediaUrls.map((url, index) =>
+            url.startsWith("data:image/") ? (
+              <img
+                key={index}
+                src={url}
+                alt={`Media ${index + 1}`}
+                className="w-full h-48 object-cover rounded-md"
+                onError={(e) => (e.target.src = "/placeholder-image.jpg")}
+              />
+            ) : (
+              <video
+                key={index}
+                src={url}
+                className="w-full h-48 object-cover rounded-md"
+                controls
+              >
+                Your browser does not support the video tag.
+              </video>
+            )
+          )}
         </div>
         <div className="flex justify-between">
           <button
-            onClick={() => navigate("/post-details")}
+            onClick={() => navigate(`/update-posts/${id}`)}
             className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
           >
-            Back to Posts
+            Update Post
           </button>
           <button
             onClick={handleDelete}

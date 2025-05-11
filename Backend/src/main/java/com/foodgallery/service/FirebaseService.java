@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class FirebaseService {
@@ -18,10 +19,32 @@ public class FirebaseService {
     }
 
     public FoodPost createPost(FoodPost foodPost) {
-        String id = databaseReference.push().getKey();
-        foodPost.setId(id);
-        databaseReference.child(id).setValueAsync(foodPost);
-        return foodPost;
+        CompletableFuture<FoodPost> future = new CompletableFuture<>();
+
+        if (foodPost.getId() == null) {
+            String id = databaseReference.push().getKey();
+            foodPost.setId(id);
+        }
+
+        databaseReference.child(foodPost.getId()).setValue(foodPost, (error, ref) -> {
+            if (error != null) {
+                future.completeExceptionally(new RuntimeException("Failed to save post: " + error.getMessage()));
+            } else {
+                // Add a small delay to ensure data is synced
+                try {
+                    Thread.sleep(500); // 500ms delay
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                future.complete(foodPost);
+            }
+        });
+
+        try {
+            return future.get(5, TimeUnit.SECONDS); // Timeout after 5 seconds
+        } catch (Exception e) {
+            throw new RuntimeException("Error saving post: Timeout or " + e.getMessage(), e);
+        }
     }
 
     public List<FoodPost> getPostsByCategory(String category) {
@@ -34,7 +57,10 @@ public class FirebaseService {
                     public void onDataChange(DataSnapshot snapshot) {
                         for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                             FoodPost post = dataSnapshot.getValue(FoodPost.class);
-                            posts.add(post);
+                            if (post != null) {
+                                post.setId(dataSnapshot.getKey());
+                                posts.add(post);
+                            }
                         }
                         future.complete(posts);
                     }
@@ -62,6 +88,7 @@ public class FirebaseService {
                 if (post == null) {
                     future.completeExceptionally(new RuntimeException("Post not found with id: " + id));
                 } else {
+                    post.setId(snapshot.getKey());
                     future.complete(post);
                 }
             }
