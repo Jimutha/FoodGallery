@@ -6,45 +6,36 @@ import LoadingSpinner from '../components/LoadingSpinner';
 const Decorations = () => {
   const [decorations, setDecorations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [likedPosts, setLikedPosts] = useState(() => {
+    const saved = localStorage.getItem('likedPosts');
+    const parsed = saved ? JSON.parse(saved) : {};
+    console.log('Initial likedPosts from localStorage:', parsed);
+    return parsed;
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDecorations = () => {
       try {
         const tips = JSON.parse(localStorage.getItem('decorationTips') || '[]');
-        console.log("Raw tips from localStorage:", tips);
+        console.log('Raw tips from localStorage:', tips);
         const validTips = tips
-          .filter((tip) => {
-            return (
-              tip &&
-              typeof tip === 'object' &&
-              tip.id &&
-              tip.title &&
-              tip.description
-            );
-          })
+          .filter((tip) => tip && typeof tip === 'object' && tip.id && tip.title && tip.description)
           .map(tip => {
             const mediaUrls = Array.isArray(tip.mediaUrls) && tip.mediaUrls.length > 0
               ? tip.mediaUrls
               : Array.isArray(tip.media)
-              ? tip.media.filter(media => 
-                  typeof media === 'string' && media.startsWith('data:image/')
-                )
+              ? tip.media.filter(media => typeof media === 'string' && media.startsWith('data:image/'))
               : [];
             const formattedComments = Array.isArray(tip.comments)
-              ? tip.comments.map(c => {
-                  if (typeof c === 'string') {
-                    return { text: c, replies: [], reactions: 0 };
-                  }
-                  return {
-                    text: c.text || '',
-                    replies: Array.isArray(c.replies) ? c.replies : [],
-                    reactions: typeof c.reactions === 'number' ? c.reactions : 0
-                  };
-                })
+              ? tip.comments.map(c => ({
+                  text: typeof c === 'string' ? c : c.text || '',
+                  replies: Array.isArray(c.replies) ? c.replies : [],
+                  reactions: typeof c.reactions === 'number' ? c.reactions : 0
+                }))
               : [];
-            console.log("Transformed mediaUrls for tip", tip.id, ":", mediaUrls);
-            console.log("Formatted comments for tip", tip.id, ":", formattedComments);
+            console.log(`Transformed mediaUrls for tip ${tip.id}:`, mediaUrls);
+            console.log(`Formatted comments for tip ${tip.id}:`, formattedComments);
             return {
               ...tip,
               mediaUrls,
@@ -52,7 +43,7 @@ const Decorations = () => {
               comments: formattedComments,
             };
           });
-        console.log("Valid tips after transformation:", validTips);
+        console.log('Valid tips after transformation:', validTips);
         setDecorations(validTips);
       } catch (error) {
         console.error('Error fetching decorations:', error);
@@ -64,6 +55,11 @@ const Decorations = () => {
     fetchDecorations();
   }, []);
 
+  useEffect(() => {
+    console.log('Saving likedPosts to localStorage:', likedPosts);
+    localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
+  }, [likedPosts]);
+
   const handleAddTip = () => {
     navigate('/addtip');
   };
@@ -72,14 +68,21 @@ const Decorations = () => {
     navigate(`/decoration/${post.id}`, { state: { post } });
   };
 
-  const handleLike = (id) => {
+  const handleLike = (id, isLikeAction) => {
+    console.log(`Handling ${isLikeAction ? 'Like' : 'Unlike'} for post ${id}. Current likes: ${decorations.find(d => d.id === id)?.likes}`);
     const updatedDecorations = decorations.map(decoration => {
       if (decoration.id === id) {
-        return { ...decoration, likes: decoration.likes + 1 };
+        const change = isLikeAction ? 1 : -1;
+        const newLikes = decoration.likes + change;
+        return { ...decoration, likes: Math.max(newLikes, 0) };
       }
       return decoration;
     });
     setDecorations(updatedDecorations);
+    setLikedPosts(prev => ({
+      ...prev,
+      [id]: isLikeAction,
+    }));
     localStorage.setItem('decorationTips', JSON.stringify(updatedDecorations));
   };
 
@@ -121,7 +124,8 @@ const Decorations = () => {
               key={decoration.id} 
               post={decoration} 
               onClick={() => handleCardClick(decoration)}
-              onLike={() => handleLike(decoration.id)}
+              onLike={(isLikeAction) => handleLike(decoration.id, isLikeAction)}
+              isLiked={!!likedPosts[decoration.id]}
               onAddComment={(comment) => handleAddComment(decoration.id, comment)}
             />
           ))}

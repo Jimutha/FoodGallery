@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const FoodPostCard = ({ post, onClick, onLike, onAddComment }) => {
+const FoodPostCard = ({ post, onClick, onLike, onAddComment, isLiked }) => {
   const [commentText, setCommentText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -9,17 +9,19 @@ const FoodPostCard = ({ post, onClick, onLike, onAddComment }) => {
       setCurrentIndex((prevIndex) => 
         prevIndex === (post.mediaUrls?.length - 1 || 0) ? 0 : prevIndex + 1
       );
-    }, 4000); // Change image every 4 seconds
-    return () => clearInterval(interval); // Cleanup interval on unmount
+    }, 4000);
+    return () => clearInterval(interval);
   }, [post.mediaUrls]);
 
   const handleCommentSubmit = (e) => {
-    e.preventDefault();
+    e.preventPropagation();
     if (commentText.trim()) {
       onAddComment(commentText);
       setCommentText('');
     }
   };
+
+  console.log(`Rendering FoodPostCard for post ${post.id}, isLiked: ${isLiked}, likes: ${post.likes}`);
 
   return (
     <div 
@@ -60,13 +62,13 @@ const FoodPostCard = ({ post, onClick, onLike, onAddComment }) => {
             <i className="bi bi-person mr-1"></i>
             Author: {post.author || "Unknown"}
           </span>
-          <span className="flex items-center text-base text-black ">
+          <span className="flex items-center text-base text-black">
             <i className="bi bi-bar-chart mr-1"></i>
             Difficulty: {post.difficulty || "N/A"}
           </span>
           <span className="flex items-center text-base text-black">
             <i className="bi bi-calendar mr-1"></i>
-            Created : {post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : "N/A"}
+            Created: {post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : "N/A"}
           </span>
         </div>
       </div>
@@ -75,12 +77,24 @@ const FoodPostCard = ({ post, onClick, onLike, onAddComment }) => {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onLike();
+              if (!isLiked) onLike(true);
             }}
-            className="flex items-center text-red-500 hover:text-red-700"
+            className={`flex items-center gap-2 ${!isLiked ? 'bg-transparent border-2 border-green-500 text-green-500 hover:bg-green-500 hover:text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'} font-semibold py-2 px-4 rounded-full transition-all duration-300`}
+            disabled={isLiked}
           >
-            <i className="bi bi-heart-fill mr-1"></i>
-            <span>{post.likes} Likes</span>
+            <i className={`bi ${isLiked ? 'bi-hand-thumbs-up-fill' : 'bi-hand-thumbs-up'}`}></i>
+            <span>Like ({post.likes})</span>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isLiked) onLike(false);
+            }}
+            className={`flex items-center gap-2 ${isLiked ? 'bg-transparent border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'} font-semibold py-2 px-4 rounded-full transition-all duration-300`}
+            disabled={!isLiked}
+          >
+            <i className={`bi ${isLiked ? 'bi-hand-thumbs-down-fill' : 'bi-hand-thumbs-down'}`}></i>
+            <span>Unlike ({post.likes})</span>
           </button>
           <span className="flex items-center text-gray-600">
             <i className="bi bi-chat-fill mr-1"></i>
